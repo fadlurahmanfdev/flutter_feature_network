@@ -1,6 +1,10 @@
 import 'package:example/data/dto/model/feature_model.dart';
+import 'package:example/data/repository/repository_datasource.dart';
+import 'package:example/presentation/main_store.dart';
 import 'package:example/presentation/widget/feature_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_feature_network/flutter_feature_network.dart';
+import 'package:get_it/get_it.dart';
 
 class SslNetworkPage extends StatefulWidget {
   const SslNetworkPage({super.key});
@@ -12,11 +16,17 @@ class SslNetworkPage extends StatefulWidget {
 class _SslNetworkPageState extends State<SslNetworkPage> {
   List<FeatureModel> features = [
     FeatureModel(
-      title: 'Capture Image',
-      desc: 'Capture Image',
-      key: 'CAPTURE_IMAGE',
+      title: 'SSL Network',
+      desc: 'SSL Network',
+      key: 'SSL_NETWORK',
     ),
   ];
+
+  final store = MainStore(
+    repositoryDatasource: RepositoryDatasourceImpl(
+      sslDio: GetIt.I.get<Dio>(),
+    ),
+  );
 
   @override
   void initState() {
@@ -36,7 +46,7 @@ class _SslNetworkPageState extends State<SslNetworkPage> {
           return GestureDetector(
             onTap: () async {
               switch (feature.key) {
-                case "CAPTURE_IMAGE":
+                case "SSL_NETWORK":
                   break;
               }
             },

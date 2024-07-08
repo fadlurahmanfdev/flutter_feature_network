@@ -11,7 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  alice: ^0.4.2
+  alice:
+    path: forks/alice
   dio: ^5.5.0+1
 
 dev_dependencies:

@@ -5,17 +5,11 @@ part 'base_response.g.dart';
 
 @JsonSerializable(explicitToJson: true, anyMap: true, genericArgumentFactories: true)
 class BaseResponse<T> extends Equatable {
-  @JsonKey(name: 'status')
-  final bool? status;
-  @JsonKey(name: 'code')
   final String? code;
-  @JsonKey(name: 'message')
   final String? message;
-  @JsonKey(name: 'data')
   final T? data;
 
   const BaseResponse({
-    this.status,
     this.code,
     this.message,
     this.data,
@@ -31,7 +25,6 @@ class BaseResponse<T> extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
         code,
         message,
         data,

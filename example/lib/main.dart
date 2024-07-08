@@ -22,7 +22,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    alice = Alice(showNotification: true, showInspectorOnShake: true);
+    alice = Alice(configuration: AliceConfiguration(showNotification: true, showInspectorOnShake: true,));
     GetIt.I.registerSingleton(alice);
     sslDio = featureNetworkUtility.getDio(
       interceptors: [
