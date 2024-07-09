@@ -24,7 +24,7 @@ class _SslNetworkPageState extends State<SslNetworkPage> {
 
   final store = MainStore(
     repositoryDatasource: RepositoryDatasourceImpl(
-      sslDio: GetIt.I.get<Dio>(),
+      sslDio: GetIt.I.get<Dio>(instanceName: 'ssl-dio'),
     ),
   );
 
@@ -47,6 +47,7 @@ class _SslNetworkPageState extends State<SslNetworkPage> {
             onTap: () async {
               switch (feature.key) {
                 case "SSL_NETWORK":
+                  store.generateGuestToken();
                   break;
               }
             },
