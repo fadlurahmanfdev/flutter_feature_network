@@ -17,7 +17,7 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
   Future<BaseResponse<GuestTokenResponse>> generateGuestToken() async {
     try {
       final res = await sslDio.post(
-        'https://api.bankmas.my.id/identity-service/guest/session/create',
+        'identity-service/guest/session/create',
         data: {
           'guestId': const Uuid().v4(),
         },
