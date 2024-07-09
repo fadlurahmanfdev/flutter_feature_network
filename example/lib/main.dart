@@ -31,7 +31,10 @@ class _MyAppState extends State<MyApp> {
     GetIt.I.registerSingleton(alice);
     GetIt.I.get<FeaturePlatformRepository>().getUserAgent().then((ua) {
       sslDio = featureNetworkUtility.getDio(
+        baseUrl: 'https://api.bankmas.my.id/',
         interceptors: [
+          RequestIdInterceptor(),
+          LoggerInterceptor(),
           alice.getDioInterceptor(),
         ],
         headers: {
