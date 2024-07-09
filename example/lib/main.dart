@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:example/presentation/main_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feature_network/flutter_feature_network.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter_feature_platform/flutter_feature_platform.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,14 +25,21 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    alice = Alice(configuration: AliceConfiguration(showNotification: true, showInspectorOnShake: true,));
+    GetIt.I.registerFactory<FeaturePlatformRepository>(() => FeaturePlatformRepositoryImpl());
+    featureNetworkUtility = FeatureNetworkUtility();
+    alice = Alice(showNotification: true, showInspectorOnShake: true);
     GetIt.I.registerSingleton(alice);
-    sslDio = featureNetworkUtility.getDio(
-      interceptors: [
-        alice.getDioInterceptor(),
-      ],
-    );
-    GetIt.I.registerSingleton(sslDio, instanceName: 'ssl-dio');
+    GetIt.I.get<FeaturePlatformRepository>().getUserAgent().then((ua) {
+      sslDio = featureNetworkUtility.getDio(
+        interceptors: [
+          alice.getDioInterceptor(),
+        ],
+        headers: {
+          HttpHeaders.userAgentHeader: ua,
+        },
+      );
+      GetIt.I.registerFactory<Dio>(() => sslDio, instanceName: 'ssl-dio');
+    });
   }
 
   @override

@@ -6,6 +6,7 @@ class FeatureNetworkUtility {
     Duration? sendTimeout,
     Duration? connectTimeout,
     String baseUrl = '',
+    Map<String, dynamic>? headers,
     List<Interceptor>? interceptors,
   }) {
     final dio = Dio(
@@ -14,9 +15,7 @@ class FeatureNetworkUtility {
         sendTimeout: sendTimeout,
         connectTimeout: connectTimeout,
         baseUrl: baseUrl,
-        headers: {
-          'tes': 'tes',
-        },
+        headers: headers,
       ),
     );
     if (interceptors != null) {

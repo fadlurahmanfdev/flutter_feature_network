@@ -39,12 +39,18 @@ dependencies:
   flutter_feature_network:
     path: ../../flutter_feature_network
 
+  flutter_feature_platform:
+    git:
+      url: https://github.com/fadlurahmanfdev/flutter_feature_platform.git
+      ref: v0.0.2-beta
+
   equatable: ^2.0.5
   flutter_mobx: ^2.2.1+1
   freezed_annotation: ^2.4.1
   get_it: ^7.7.0
   json_annotation: ^4.9.0
   mobx: ^2.3.3+2
+  uuid: ^4.4.0
 
 dev_dependencies:
   flutter_test:
