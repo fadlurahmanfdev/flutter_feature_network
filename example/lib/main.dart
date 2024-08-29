@@ -1,21 +1,29 @@
 import 'dart:io';
 
+import 'package:example/data/dto/model/ssl_fingerprint_model.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
+import 'package:example/domain/interceptor/dynamic_ssl_interceptor.dart';
+import 'package:example/firebase_options.dart';
 import 'package:example/presentation/main_store.dart';
 import 'package:example/presentation/widget/feature_widget.dart';
 import 'package:example/presentation/widget/info_bottomsheet.dart';
 import 'package:example/presentation/widget/loading_dialog.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feature_network/flutter_feature_network.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_feature_platform/flutter_feature_platform.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:mobx/mobx.dart';
 
 import 'data/dto/model/feature_model.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -28,7 +36,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Alice alice;
-  bool isAliceRegistered = false;
+  late FirebaseRemoteConfig remoteConfig;
+  bool isAllFullySetup = false;
   late Dio placeHolderStandardDio;
   late Dio sslDio;
 
@@ -40,8 +49,19 @@ class _MyAppState extends State<MyApp> {
     GetIt.I.registerFactory<FeaturePlatformRepository>(() => FeaturePlatformRepositoryImpl());
     alice = Alice(showNotification: true, showInspectorOnShake: true);
     GetIt.I.registerSingleton(alice);
-    setState(() {
-      isAliceRegistered = true;
+    remoteConfig = FirebaseRemoteConfig.instance;
+    remoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: const Duration(seconds: 60),
+      minimumFetchInterval: const Duration(seconds: 10),
+    ));
+    GetIt.I.registerSingleton(remoteConfig);
+    GetIt.I.get<FirebaseRemoteConfig>().fetchAndActivate();
+    GetIt.I.get<FirebaseRemoteConfig>().ensureInitialized();
+
+    Future.delayed(const Duration(seconds: 3), () {
+      setState(() {
+        isAllFullySetup = true;
+      });
     });
     // GetIt.I.get<FeaturePlatformRepository>().getUserAgent().then((ua) {
     //   print("MASUK_ GET USER AGENT: $ua");
@@ -66,7 +86,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return isAliceRegistered
+    return isAllFullySetup
         ? MaterialApp(
             navigatorKey: alice.getNavigatorKey(),
             title: 'Flutter Feature Network',
@@ -114,9 +134,9 @@ class _MainPageState extends State<MainPage> {
       key: 'FETCHED_POST_INCORRECT_FINGERPRINT',
     ),
     FeatureModel(
-      title: 'SSL Network',
-      desc: 'SSL Network',
-      key: 'SSL_NETWORK',
+      title: 'Fetched Post',
+      desc: 'Fetched Post - Dynamic Fingerprint',
+      key: 'FETCHED_POST_DYNAMIC_FINGERPRINT',
     ),
   ];
   List<ReactionDisposer> reactions = [];
@@ -169,14 +189,15 @@ class _MainPageState extends State<MainPage> {
         '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
       ],
     );
-    final sslDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
+    final placeHolderDynamicSslFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
       baseUrl: 'https://jsonplaceholder.typicode.com/',
       headers: {
         HttpHeaders.userAgentHeader: userAgent,
       },
       interceptors: [
-        LoggerInterceptor(),
+        DynamicSslInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
         GetIt.I.get<Alice>().getDioInterceptor(),
+        LoggerInterceptor(),
       ],
     );
     mainStore = MainStore(
@@ -184,7 +205,7 @@ class _MainPageState extends State<MainPage> {
         placeHolderStandardDio: placeHolderStandardDio,
         placeHolderCorrectFingerprintDio: placeHolderCorrectFingerprintDio,
         placeHolderIncorrectFingerprintDio: placeHolderIncorrectFingerprintDio,
-        sslDio: sslDio,
+        placeHolderDynamicFingerprintDio: placeHolderDynamicSslFingerprintDio,
       ),
     );
     reactions = [
@@ -228,7 +249,8 @@ class _MainPageState extends State<MainPage> {
                       case "FETCHED_POST_INCORRECT_FINGERPRINT":
                         mainStore.getPostByIdIncorrectFingerprint();
                         break;
-                      case "SSL_NETWORK":
+                      case "FETCHED_POST_DYNAMIC_FINGERPRINT":
+                        mainStore.getPostByIdDynamicFingerprint();
                         break;
                     }
                   },
