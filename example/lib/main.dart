@@ -21,6 +21,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Alice alice;
+  bool isAliceRegistered = false;
   late Dio sslDio;
 
   @override
@@ -29,8 +30,11 @@ class _MyAppState extends State<MyApp> {
     // FeatureNetworkRepository networkRepository = FeatureNetworkRepositoryImpl();
     // GetIt.I.registerFactory<FeatureNetworkRepository>(() => networkRepository);
     // GetIt.I.registerFactory<FeaturePlatformRepository>(() => FeaturePlatformRepositoryImpl());
-    // alice = Alice(showNotification: true, showInspectorOnShake: true);
-    // GetIt.I.registerSingleton(alice);
+    alice = Alice(showNotification: true, showInspectorOnShake: true);
+    GetIt.I.registerSingleton(alice);
+    setState(() {
+      isAliceRegistered = true;
+    });
     // GetIt.I.get<FeaturePlatformRepository>().getUserAgent().then((ua) {
     //   print("MASUK_ GET USER AGENT: $ua");
     //   rootBundle.load("assets/retail_dev_bank_mas_net.pem").then((byteData) {
@@ -54,14 +58,23 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: alice.getNavigatorKey(),
-      title: 'Flutter Feature Network Example',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MainPage(),
-    );
+    return isAliceRegistered
+        ? MaterialApp(
+            navigatorKey: alice.getNavigatorKey(),
+            title: 'Flutter Feature Network',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+              useMaterial3: true,
+            ),
+            home: const MainPage(),
+          )
+        : MaterialApp(
+            title: 'Flutter Feature Network - Non Alice',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+              useMaterial3: true,
+            ),
+            home: const MainPage(),
+          );
   }
 }
