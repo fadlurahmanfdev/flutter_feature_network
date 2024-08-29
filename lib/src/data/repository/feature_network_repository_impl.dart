@@ -67,9 +67,9 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
         timeout: timeout,
       );
       return true;
-    } on FeatureNetworkException catch (e) {
+    } on FeatureNetworkException catch (_) {
       return false;
-    } catch (e) {
+    } catch (_) {
       return false;
     }
   }

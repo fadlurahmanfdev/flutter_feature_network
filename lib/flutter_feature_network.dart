@@ -1,6 +1,6 @@
 library flutter_feature_networking;
 
-export 'package:alice/alice.dart';
+export 'package:fadlurahmanfdev_alice/alice.dart';
 export 'package:dio/dio.dart';
 
 export 'src/data/dto/feature_network_exception.dart';
