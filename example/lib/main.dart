@@ -153,16 +153,7 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> init() async {
     final userAgent = await GetIt.I.get<FeaturePlatformRepository>().getUserAgent();
-    final placeHolderStandardDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
-      baseUrl: 'https://jsonplaceholder.typicode.com/',
-      headers: {
-        HttpHeaders.userAgentHeader: userAgent,
-      },
-      interceptors: [
-        LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
-      ],
-    );
+    final placeHolderStandardDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient();
     final placeHolderCorrectFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
       baseUrl: 'https://jsonplaceholder.typicode.com/',
       headers: {

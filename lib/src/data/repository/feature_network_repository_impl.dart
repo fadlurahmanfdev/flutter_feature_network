@@ -83,7 +83,11 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
   }) async {
     try {
       final connection = await HttpCertificatePinning.check(
-          serverURL: serverUrl, sha: sha, allowedSHAFingerprints: allowedSHAFingerprints, timeout: timeout);
+        serverURL: serverUrl,
+        sha: sha,
+        allowedSHAFingerprints: allowedSHAFingerprints,
+        timeout: timeout,
+      );
       if (!connection.contains('CONNECTION_SECURE')) {
         throw FeatureNetworkException(
           code: 'CONNECTION_NOT_SECURE',
