@@ -29,10 +29,28 @@ class StaticSslFingerPrintInterceptor extends InterceptorsWrapper {
       if (secure.contains('CONNECTION_SECURE')) {
         handler.next(options);
       } else {
-        throw HandshakeException('Connection not secure: $secure');
+        handler.reject(
+          DioException(
+            requestOptions: options,
+            error: HandshakeException('Connection is not secure: $secure'),
+            response: Response(
+              requestOptions: options,
+              statusCode: 495,
+            ),
+          ),
+        );
       }
     } on PlatformException catch (e) {
-      throw HandshakeException('Platform Exception Bad Certificate: ${e.message}');
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          error: HandshakeException('Platform Exception Bad Certificate: ${e.message}'),
+          response: Response(
+            requestOptions: options,
+            statusCode: 495,
+          ),
+        ),
+      );
     }
   }
 }
