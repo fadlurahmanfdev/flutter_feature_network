@@ -49,4 +49,15 @@ abstract class MainStoreBase with Store {
       fetchNetworkState = FetchNetworkFailedState(exception: e);
     }
   }
+
+  @action
+  Future<void> getPostByIdDynamicFingerprint() async {
+    try {
+      fetchNetworkState = FetchNetworkLoadingState();
+      await repositoryDatasource.getPostByIdDynamicFingerprint(id: 1);
+      fetchNetworkState = FetchNetworkSuccessState();
+    } on FeatureException catch (e) {
+      fetchNetworkState = FetchNetworkFailedState(exception: e);
+    }
+  }
 }
