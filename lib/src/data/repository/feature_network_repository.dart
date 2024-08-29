@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 abstract class FeatureNetworkRepository {
-  Dio getDio({
+  Dio getDioClient({
     Duration? receiveTimeout,
     Duration? sendTimeout,
     Duration? connectTimeout,
