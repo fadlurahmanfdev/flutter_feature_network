@@ -1,39 +1,74 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Overview
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+`flutter_feature_network` is a library designed to simplify and enhance network operations in Flutter
+applications.
+This library provides a suite of tools and methods to manage network requests efficiently, including
+Dio client setup, logging, request identification, and SSL security.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+## Methods
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+### Get Dio Client
 
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Only one of `trustedCertificateBytes` or `allowedFingerprints` allowed.
 
 ```dart
-const like = 'sample';
+
+final dioClient = FeatureNetworkRepositoryImpl().getDioClient();
 ```
 
-## Additional information
+| Parameter Name            | Type              | Required | Description                                                                                     |
+|---------------------------|-------------------|----------|-------------------------------------------------------------------------------------------------|
+| `receiveTimeout`          | Duration          | no       | The maximum amount of time the client will wait to receive data from the server.                |
+| `connectTimeout`          | Duration          | no       | The maximum amount of time allowed for the client to establish a connection to the server.      |
+| `sendTimeout`             | Duration          | no       | The maximum amount of time allowed for the client to send the request data to the server.       |
+| `baseUrl`                 | String            | no       | The base URL for all requests made by this client.                                              |
+| `headers`                 | String            | no       | The default headers to be included in every request.                                            |
+| `interceptors`            | List<Interceptor> | no       | A list of interceptors that will be added to the Dio client for request/response modifications. |
+| `trustedCertificateBytes` | List<int>         | no       | A list of bytes representing trusted certificates for SSL pinning.                              |
+| `allowedFingerprints`     | List<String>      | no       | A list of allowed SSL certificate SHA fingerprints for secure connections.                      |
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+### Is Connection Secure
+
+This is will checked if the connection using certificate is secure.
+
+if connection is secure, it will return true, otherwise it will return false.
+
+```dart
+
+final isSecure = FeatureNetworkRepositoryImpl().isConnectionSecure(
+  serverUrl: 'https://jsonplaceholder.typicode.com/',
+  sha: SHA.SHA_256,
+  allowedSHAFingerprints: [
+    '14f9996f9481eac7f9c005f6954c2f032d8e9cb13d4440ebed35f14bed22c43f',
+  ],
+);
+```
+
+| Parameter Name        | Type         | Required | Description                                                                 |
+|-----------------------|--------------|----------|-----------------------------------------------------------------------------|
+| `baseUrl`             | String       | true     | The URL of the server to check the connection against.                      |
+| `sha`                 | SHA          | true     | The hashing algorithm used (e.g., SHA_256) for the certificate fingerprint. |
+| `allowedFingerprints` | List<String> | true     | A list of allowed SHA fingerprints for SSL certificates.                    |
+
+### Check Is Connection Secure
+
+This is will checked if the connection using certificate is secure.
+
+```dart
+
+final isSecure = FeatureNetworkRepositoryImpl().checkIsConnectionSecure(
+  serverUrl: 'https://jsonplaceholder.typicode.com/',
+  sha: SHA.SHA_256,
+  allowedSHAFingerprints: [
+    '14f9996f9481eac7f9c005f6954c2f032d8e9cb13d4440ebed35f14bed22c43f',
+  ],
+);
+```
+
+| Parameter Name        | Type         | Required | Description                                                                 |
+|-----------------------|--------------|----------|-----------------------------------------------------------------------------|
+| `baseUrl`             | String       | true     | The URL of the server to check the connection against.                      |
+| `sha`                 | SHA          | true     | The hashing algorithm used (e.g., SHA_256) for the certificate fingerprint. |
+| `allowedFingerprints` | List<String> | true     | A list of allowed SHA fingerprints for SSL certificates.                    |
+
+
