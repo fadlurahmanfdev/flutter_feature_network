@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
 abstract class FeatureNetworkRepository {
   Dio getDioClient({
@@ -22,5 +23,19 @@ abstract class FeatureNetworkRepository {
      * only one of trustedCertificateBytes or allowedFingerprints can be used.
      * */
     List<String>? allowedFingerprints,
+  });
+
+  Future<bool> isConnectionSecure({
+    required String serverUrl,
+    required SHA sha,
+    int timeout = 60,
+    required List<String> allowedSHAFingerprints,
+  });
+
+  Future<void> checkIsConnectionSecure({
+    required String serverUrl,
+    required SHA sha,
+    int timeout = 60,
+    required List<String> allowedSHAFingerprints,
   });
 }
