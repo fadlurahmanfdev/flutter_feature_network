@@ -27,4 +27,26 @@ abstract class MainStoreBase with Store {
       fetchNetworkState = FetchNetworkFailedState(exception: e);
     }
   }
+
+  @action
+  Future<void> getPostByIdCorrectFingerprint() async {
+    try {
+      fetchNetworkState = FetchNetworkLoadingState();
+      await repositoryDatasource.getPostByIdCorrectFingerprint(id: 1);
+      fetchNetworkState = FetchNetworkSuccessState();
+    } on FeatureException catch (e) {
+      fetchNetworkState = FetchNetworkFailedState(exception: e);
+    }
+  }
+
+  @action
+  Future<void> getPostByIdIncorrectFingerprint() async {
+    try {
+      fetchNetworkState = FetchNetworkLoadingState();
+      await repositoryDatasource.getPostByIdIncorrectFingerprint(id: 1);
+      fetchNetworkState = FetchNetworkSuccessState();
+    } on FeatureException catch (e) {
+      fetchNetworkState = FetchNetworkFailedState(exception: e);
+    }
+  }
 }
