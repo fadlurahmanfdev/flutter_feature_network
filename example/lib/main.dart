@@ -104,6 +104,16 @@ class _MainPageState extends State<MainPage> {
       key: 'FETCHED_POST_OK',
     ),
     FeatureModel(
+      title: 'Fetched Post',
+      desc: 'Fetched Post - Correct Fingerprint',
+      key: 'FETCHED_POST_CORRECT_FINGERPRINT',
+    ),
+    FeatureModel(
+      title: 'Fetched Post',
+      desc: 'Fetched Post - Incorrect Fingerprint',
+      key: 'FETCHED_POST_INCORRECT_FINGERPRINT',
+    ),
+    FeatureModel(
       title: 'SSL Network',
       desc: 'SSL Network',
       key: 'SSL_NETWORK',
@@ -133,6 +143,32 @@ class _MainPageState extends State<MainPage> {
         GetIt.I.get<Alice>().getDioInterceptor(),
       ],
     );
+    final placeHolderCorrectFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
+      baseUrl: 'https://jsonplaceholder.typicode.com/',
+      headers: {
+        HttpHeaders.userAgentHeader: userAgent,
+      },
+      interceptors: [
+        LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+      ],
+      allowedFingerprints: [
+        '14f9996f9481eac7f9c005f6954c2f032d8e9cb13d4440ebed35f14bed22c43f',
+      ],
+    );
+    final placeHolderIncorrectFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
+      baseUrl: 'https://jsonplaceholder.typicode.com/',
+      headers: {
+        HttpHeaders.userAgentHeader: userAgent,
+      },
+      interceptors: [
+        LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+      ],
+      allowedFingerprints: [
+        '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
+      ],
+    );
     final sslDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
       baseUrl: 'https://jsonplaceholder.typicode.com/',
       headers: {
@@ -146,6 +182,8 @@ class _MainPageState extends State<MainPage> {
     mainStore = MainStore(
       repositoryDatasource: RepositoryDatasourceImpl(
         placeHolderStandardDio: placeHolderStandardDio,
+        placeHolderCorrectFingerprintDio: placeHolderCorrectFingerprintDio,
+        placeHolderIncorrectFingerprintDio: placeHolderIncorrectFingerprintDio,
         sslDio: sslDio,
       ),
     );
@@ -183,6 +221,12 @@ class _MainPageState extends State<MainPage> {
                     switch (feature.key) {
                       case "FETCHED_POST_OK":
                         mainStore.getPostById();
+                        break;
+                      case "FETCHED_POST_CORRECT_FINGERPRINT":
+                        mainStore.getPostByIdCorrectFingerprint();
+                        break;
+                      case "FETCHED_POST_INCORRECT_FINGERPRINT":
+                        mainStore.getPostByIdIncorrectFingerprint();
                         break;
                       case "SSL_NETWORK":
                         break;
