@@ -8,7 +8,6 @@ class ExampleSSLInterceptor extends SSLInterceptor {
   void onHandshakeException(DioException dioException, ErrorInterceptorHandler handler) async {
     try {
       rootBundle.load("assets/api_bank_mas_my_id.pem").then((byteData) async {
-        print("MASUK_ GANTI DIO CLIENT");
         final dio = networkRepository.getDio(
           baseUrl: dioException.requestOptions.baseUrl,
           headers: dioException.requestOptions.headers,
