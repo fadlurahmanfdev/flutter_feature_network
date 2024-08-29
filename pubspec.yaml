@@ -11,10 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  alice:
-    git:
-      url: https://github.com/fadlurahmanfdev/alice.git
-      ref: 9e54c6782a54b08102a7aae1414b6d7ed1ea09eb
+  fadlurahmanfdev_alice: ^0.0.1
   dio: ^5.5.0+1
   http_certificate_pinning: ^2.1.2
   logger: ^2.3.0
