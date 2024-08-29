@@ -1,34 +1,35 @@
-import 'package:example/data/dto/response/base_bebas_response.dart';
-import 'package:example/data/dto/response/base_response.dart';
-import 'package:example/data/dto/response/guest_token/guest_token_response.dart';
+import 'dart:developer';
+
+import 'package:example/data/dto/model/feature_exception.dart';
+import 'package:example/data/dto/response/post/post_response.dart';
 import 'package:flutter_feature_network/flutter_feature_network.dart';
-import 'package:uuid/uuid.dart';
 
 abstract class RepositoryDatasource {
-  Future<BaseResponse<GuestTokenResponse>> generateGuestToken();
+  Future<PostResponse> getPostById({required int id});
 }
 
 class RepositoryDatasourceImpl extends RepositoryDatasource {
+  Dio placeHolderStandardDio;
   Dio sslDio;
 
-  RepositoryDatasourceImpl({required this.sslDio});
+  RepositoryDatasourceImpl({
+    required this.placeHolderStandardDio,
+    required this.sslDio,
+  });
 
   @override
-  Future<BaseResponse<GuestTokenResponse>> generateGuestToken() async {
+  Future<PostResponse> getPostById({required int id}) async {
     try {
-      final res = await sslDio.post(
-        'identity-service/guest/session/create',
-        data: {
-          'guestId': const Uuid().v4(),
-        },
+      final res = await placeHolderStandardDio.get(
+        'posts/$id',
       );
       final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return BaseBebasResponse<GuestTokenResponse>.fromJson(
-          dataMap, (json) => GuestTokenResponse.fromJson(json as Map<String, dynamic>? ?? {}));
+      return PostResponse.fromJson(dataMap);
     } on DioException catch (e) {
-      rethrow;
+      log("failed dio: $e");
+      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
     } catch (e) {
-      rethrow;
+      throw FeatureException(title: 'Failed', desc: 'error: $e');
     }
   }
 }
