@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
 import 'package:example/domain/interceptor/dynamic_ssl_interceptor.dart';
+import 'package:example/domain/interceptor/example_ssl_interceptor.dart';
 import 'package:example/firebase_options.dart';
 import 'package:example/presentation/main_store.dart';
 import 'package:example/presentation/widget/feature_widget.dart';
@@ -137,6 +138,16 @@ class _MainPageState extends State<MainPage> {
       desc: 'Fetched Post - Dynamic Fingerprint',
       key: 'FETCHED_POST_DYNAMIC_FINGERPRINT',
     ),
+    FeatureModel(
+      title: 'Fetched Post',
+      desc: 'Fetched Post - Correct Certificate Byte',
+      key: 'FETCHED_POST_CORRECT_CERTIFICATE_BYTE',
+    ),
+    FeatureModel(
+      title: 'Fetched Post',
+      desc: 'Fetched Post - Incorrect Certificate Byte',
+      key: 'FETCHED_POST_INCORRECT_CERTIFICATE_BYTE',
+    ),
   ];
   List<ReactionDisposer> reactions = [];
 
@@ -190,12 +201,41 @@ class _MainPageState extends State<MainPage> {
         LoggerInterceptor(),
       ],
     );
+    final jsonPlaceholderCertByte =
+        await FlutterFeatureNetwork.getCertificateBytesFromAsset(assetPath: 'assets/jsonplaceholder_cert.pem');
+    final wikipediaCertByte =
+        await FlutterFeatureNetwork.getCertificateBytesFromAsset(assetPath: 'assets/wikipedia_cert.pem');
+    final correctCertificateByteDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
+          baseUrl: 'https://jsonplaceholder.typicode.com/',
+          headers: {
+            HttpHeaders.userAgentHeader: userAgent,
+          },
+          interceptors: [
+            GetIt.I.get<Alice>().getDioInterceptor(),
+            LoggerInterceptor(),
+          ],
+          trustedCertificateBytes: jsonPlaceholderCertByte,
+        );
+    final incorrectCertificateByteDio = FlutterFeatureNetwork.getDioClient(
+          baseUrl: 'https://jsonplaceholder.typicode.com/',
+          headers: {
+            HttpHeaders.userAgentHeader: userAgent,
+          },
+          interceptors: [
+            ExampleSSLInterceptor(),
+            GetIt.I.get<Alice>().getDioInterceptor(),
+            LoggerInterceptor(),
+          ],
+          trustedCertificateBytes: wikipediaCertByte,
+        );
     mainStore = MainStore(
       repositoryDatasource: RepositoryDatasourceImpl(
         placeHolderStandardDio: placeHolderStandardDio,
         placeHolderCorrectFingerprintDio: placeHolderCorrectFingerprintDio,
         placeHolderIncorrectFingerprintDio: placeHolderIncorrectFingerprintDio,
         placeHolderDynamicFingerprintDio: placeHolderDynamicSslFingerprintDio,
+        placeHolderCorrectCertByteDio: correctCertificateByteDio,
+        placeHolderIncorrectCertByteDio: incorrectCertificateByteDio,
       ),
     );
     reactions = [
@@ -241,6 +281,12 @@ class _MainPageState extends State<MainPage> {
                         break;
                       case "FETCHED_POST_DYNAMIC_FINGERPRINT":
                         mainStore.getPostByIdDynamicFingerprint();
+                        break;
+                      case "FETCHED_POST_CORRECT_CERTIFICATE_BYTE":
+                        mainStore.getPostByIdCorrectCertByte();
+                        break;
+                      case "FETCHED_POST_INCORRECT_CERTIFICATE_BYTE":
+                        mainStore.getPostByIdIncorrectCertByte();
                         break;
                     }
                   },

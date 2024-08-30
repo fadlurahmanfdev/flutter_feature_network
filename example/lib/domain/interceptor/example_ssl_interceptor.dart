@@ -7,18 +7,7 @@ class ExampleSSLInterceptor extends SSLInterceptor {
   @override
   void onHandshakeException(DioException dioException, ErrorInterceptorHandler handler) async {
     try {
-      rootBundle.load("assets/api_bank_mas_my_id.pem").then((byteData) async {
-        final dio = networkRepository.getDioClient(
-          baseUrl: dioException.requestOptions.baseUrl,
-          headers: dioException.requestOptions.headers,
-          interceptors: [
-            LoggerInterceptor(),
-          ],
-          trustedCertificateBytes: byteData.buffer.asUint8List(),
-        );
-        final result = await dio.fetch(dioException.requestOptions);
-        handler.resolve(result);
-      });
+      // on handshake exception
     } catch (e) {
       handler.next(dioException);
     }
