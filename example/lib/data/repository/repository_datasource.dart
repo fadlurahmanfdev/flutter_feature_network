@@ -10,6 +10,10 @@ abstract class RepositoryDatasource {
   Future<PostResponse> getPostByIdIncorrectFingerprint({required int id});
 
   Future<PostResponse> getPostByIdDynamicFingerprint({required int id});
+
+  Future<PostResponse> getPostByIdCorrectCertByte({required int id});
+
+  Future<PostResponse> getPostByIdIncorrectCertByte({required int id});
 }
 
 class RepositoryDatasourceImpl extends RepositoryDatasource {
@@ -17,12 +21,16 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
   Dio placeHolderCorrectFingerprintDio;
   Dio placeHolderIncorrectFingerprintDio;
   Dio placeHolderDynamicFingerprintDio;
+  Dio placeHolderCorrectCertByteDio;
+  Dio placeHolderIncorrectCertByteDio;
 
   RepositoryDatasourceImpl({
     required this.placeHolderStandardDio,
     required this.placeHolderCorrectFingerprintDio,
     required this.placeHolderIncorrectFingerprintDio,
     required this.placeHolderDynamicFingerprintDio,
+    required this.placeHolderCorrectCertByteDio,
+    required this.placeHolderIncorrectCertByteDio,
   });
 
   @override
@@ -74,6 +82,36 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
   Future<PostResponse> getPostByIdDynamicFingerprint({required int id}) async {
     try {
       final res = await placeHolderDynamicFingerprintDio.get(
+        'posts/$id',
+      );
+      final dataMap = res.data as Map<String, dynamic>? ?? {};
+      return PostResponse.fromJson(dataMap);
+    } on DioException catch (e) {
+      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
+    } catch (e) {
+      throw FeatureException(title: 'Failed', desc: 'error: $e');
+    }
+  }
+
+  @override
+  Future<PostResponse> getPostByIdCorrectCertByte({required int id}) async {
+    try {
+      final res = await placeHolderCorrectCertByteDio.get(
+        'posts/$id',
+      );
+      final dataMap = res.data as Map<String, dynamic>? ?? {};
+      return PostResponse.fromJson(dataMap);
+    } on DioException catch (e) {
+      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
+    } catch (e) {
+      throw FeatureException(title: 'Failed', desc: 'error: $e');
+    }
+  }
+
+  @override
+  Future<PostResponse> getPostByIdIncorrectCertByte({required int id}) async {
+    try {
+      final res = await placeHolderIncorrectCertByteDio.get(
         'posts/$id',
       );
       final dataMap = res.data as Map<String, dynamic>? ?? {};
