@@ -32,7 +32,7 @@ abstract class FeatureNetworkRepository {
     required List<String> allowedSHAFingerprints,
   });
 
-  Future<void> checkIsConnectionSecure({
+  Future<void> checkHttpCertificatePinning({
     required String serverUrl,
     required SHA sha,
     int timeout = 60,

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_feature_network/src/data/dto/feature_network_exception.dart';
 import 'package:flutter_feature_network/src/data/repository/feature_network_repository.dart';
 import 'package:flutter_feature_network/src/domain/interceptor/allowed_ssl_fingerprint_interceptor.dart';
+import 'package:flutter_feature_network/src/domain/plugin/flutter_feature_network.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
 class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
@@ -60,7 +61,7 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
     required List<String> allowedSHAFingerprints,
   }) async {
     try {
-      await checkIsConnectionSecure(
+      await checkHttpCertificatePinning(
         serverUrl: serverUrl,
         sha: sha,
         allowedSHAFingerprints: allowedSHAFingerprints,
@@ -75,30 +76,16 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
   }
 
   @override
-  Future<void> checkIsConnectionSecure({
+  Future<void> checkHttpCertificatePinning({
     required String serverUrl,
     required SHA sha,
     int timeout = 60,
     required List<String> allowedSHAFingerprints,
   }) async {
-    try {
-      final connection = await HttpCertificatePinning.check(
-        serverURL: serverUrl,
-        sha: sha,
-        allowedSHAFingerprints: allowedSHAFingerprints,
-        timeout: timeout,
-      );
-      if (!connection.contains('CONNECTION_SECURE')) {
-        throw FeatureNetworkException(
-          code: 'CONNECTION_NOT_SECURE',
-          message: 'Connection not secure: $connection',
-        );
-      }
-    } on PlatformException catch (e) {
-      throw FeatureNetworkException(
-        code: 'BAD_CERTIFICATE',
-        message: 'Bad Certificate: $e',
-      );
-    }
+    return FlutterFeatureNetwork.checkHttpCertificatePinning(
+      serverUrl: serverUrl,
+      sha: sha,
+      allowedSHAFingerprints: allowedSHAFingerprints,
+    );
   }
 }
