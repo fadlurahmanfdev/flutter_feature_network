@@ -63,25 +63,6 @@ class _MyAppState extends State<MyApp> {
         isAllFullySetup = true;
       });
     });
-    // GetIt.I.get<FeaturePlatformRepository>().getUserAgent().then((ua) {
-    //   print("MASUK_ GET USER AGENT: $ua");
-    //   rootBundle.load("assets/retail_dev_bank_mas_net.pem").then((byteData) {
-    //     print("MASUK_ GET TRUSTED CERT BYTES");
-    //     sslDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
-    //           baseUrl: 'https://api.bankmas.my.id/',
-    //           interceptors: [
-    //             LoggerInterceptor(),
-    //             ExampleSSLInterceptor(),
-    //             alice.getDioInterceptor(),
-    //           ],
-    //           headers: {
-    //             HttpHeaders.userAgentHeader: ua,
-    //           },
-    //           trustedCertificateBytes: byteData.buffer.asUint8List(),
-    //         );
-    //     GetIt.I.registerFactory<Dio>(() => sslDio, instanceName: 'ssl-dio');
-    //   });
-    // });
   }
 
   @override
