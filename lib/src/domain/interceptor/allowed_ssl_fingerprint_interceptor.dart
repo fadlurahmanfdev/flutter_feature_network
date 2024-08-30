@@ -22,7 +22,7 @@ class AllowedSSLFingerprintInterceptor extends InterceptorsWrapper {
     }
 
     try {
-      await _featureNetworkRepository?.checkIsConnectionSecure(
+      await _featureNetworkRepository?.checkHttpCertificatePinning(
         serverUrl: baseUrl,
         sha: SHA.SHA256,
         allowedSHAFingerprints: allowedSHAFingerprints,

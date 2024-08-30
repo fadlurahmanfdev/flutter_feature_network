@@ -11,4 +11,6 @@ export 'src/data/repository/feature_network_repository_impl.dart';
 export 'src/domain/interceptor/logger_interceptor.dart';
 export 'src/domain/interceptor/ssl_interceptor.dart';
 
+export 'src/domain/plugin/flutter_feature_network.dart';
+
 export 'package:http_certificate_pinning/http_certificate_pinning.dart';
