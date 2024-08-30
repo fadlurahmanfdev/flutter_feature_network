@@ -6,4 +6,11 @@ class FeatureNetworkException {
     required this.code,
     required this.message,
   });
+
+  Map<String, String> toJson() {
+    return {
+      'code': code,
+      'message': message,
+    };
+  }
 }
