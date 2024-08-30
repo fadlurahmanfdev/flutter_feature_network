@@ -36,7 +36,6 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
       final dataMap = res.data as Map<String, dynamic>? ?? {};
       return PostResponse.fromJson(dataMap);
     } on DioException catch (e) {
-      log("failed dio: $e");
       throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
     } catch (e) {
       throw FeatureException(title: 'Failed', desc: 'error: $e');
@@ -52,7 +51,6 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
       final dataMap = res.data as Map<String, dynamic>? ?? {};
       return PostResponse.fromJson(dataMap);
     } on DioException catch (e) {
-      log("failed dio: $e");
       throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
     } catch (e) {
       throw FeatureException(title: 'Failed', desc: 'error: $e');
@@ -68,7 +66,6 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
       final dataMap = res.data as Map<String, dynamic>? ?? {};
       return PostResponse.fromJson(dataMap);
     } on DioException catch (e) {
-      log("failed dio: $e");
       throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
     } catch (e) {
       throw FeatureException(title: 'Failed', desc: 'error: $e');
@@ -84,7 +81,6 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
       final dataMap = res.data as Map<String, dynamic>? ?? {};
       return PostResponse.fromJson(dataMap);
     } on DioException catch (e) {
-      log("failed dio: $e");
       throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
     } catch (e) {
       throw FeatureException(title: 'Failed', desc: 'error: $e');

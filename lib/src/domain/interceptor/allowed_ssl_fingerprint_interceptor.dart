@@ -1,17 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_feature_network/src/data/dto/feature_network_exception.dart';
-import 'package:flutter_feature_network/src/data/repository/feature_network_repository.dart';
-import 'package:flutter_feature_network/src/data/repository/feature_network_repository_impl.dart';
+import 'package:flutter_feature_network/src/domain/plugin/flutter_feature_network.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
+import 'package:logger/logger.dart';
 
 class AllowedSSLFingerprintInterceptor extends InterceptorsWrapper {
   List<String> allowedSHAFingerprints;
 
-  AllowedSSLFingerprintInterceptor({required this.allowedSHAFingerprints}) {
-    _featureNetworkRepository = FeatureNetworkRepositoryImpl();
-  }
+  AllowedSSLFingerprintInterceptor({required this.allowedSHAFingerprints});
 
-  FeatureNetworkRepository? _featureNetworkRepository;
+  final Logger _logger = Logger();
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
@@ -22,7 +20,7 @@ class AllowedSSLFingerprintInterceptor extends InterceptorsWrapper {
     }
 
     try {
-      await _featureNetworkRepository?.checkHttpCertificatePinning(
+      await FlutterFeatureNetwork.checkHttpCertificatePinning(
         serverUrl: baseUrl,
         sha: SHA.SHA256,
         allowedSHAFingerprints: allowedSHAFingerprints,
@@ -30,6 +28,10 @@ class AllowedSSLFingerprintInterceptor extends InterceptorsWrapper {
       );
       handler.next(options);
     } on FeatureNetworkException catch (e) {
+      String loggerText = "Feature-Network-Exception";
+      loggerText += "\nCODE: ${e.code}";
+      loggerText += "\nMESSAGE: ${e.message}";
+      _logger.e(loggerText);
       handler.reject(
         DioException(
           requestOptions: options,
