@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:example/data/dto/model/feature_exception.dart';
 import 'package:example/data/dto/response/post/post_response.dart';
 import 'package:flutter_feature_network/flutter_feature_network.dart';

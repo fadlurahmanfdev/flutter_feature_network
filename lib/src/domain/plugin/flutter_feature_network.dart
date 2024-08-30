@@ -1,10 +1,56 @@
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_feature_network/src/data/dto/feature_network_exception.dart';
+import 'package:flutter_feature_network/src/domain/interceptor/allowed_ssl_fingerprint_interceptor.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
 class FlutterFeatureNetwork {
+  static Dio getDioClient({
+    Duration? receiveTimeout,
+    Duration? sendTimeout,
+    Duration? connectTimeout,
+    String baseUrl = '',
+    Map<String, dynamic>? headers,
+    List<Interceptor>? interceptors,
+    List<int>? trustedCertificateBytes,
+    List<String>? allowedFingerprints,
+  }) {
+    assert(trustedCertificateBytes == null || allowedFingerprints == null);
+
+    final dio = Dio(
+      BaseOptions(
+        receiveTimeout: receiveTimeout,
+        sendTimeout: sendTimeout,
+        connectTimeout: connectTimeout,
+        baseUrl: baseUrl,
+        headers: headers,
+      ),
+    );
+
+    if (trustedCertificateBytes != null) {
+      (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        final securityContext = SecurityContext();
+        securityContext.setTrustedCertificatesBytes(trustedCertificateBytes);
+        final httpClient = HttpClient(context: securityContext);
+        return httpClient;
+      };
+    }
+
+    if (interceptors != null) {
+      dio.interceptors.addAll(interceptors);
+    }
+
+    if (allowedFingerprints != null) {
+      dio.interceptors.add(AllowedSSLFingerprintInterceptor(allowedSHAFingerprints: allowedFingerprints));
+    }
+
+    return dio;
+  }
+
   static Future<bool> isConnectionSecure({
     required String serverUrl,
     required SHA sha,
