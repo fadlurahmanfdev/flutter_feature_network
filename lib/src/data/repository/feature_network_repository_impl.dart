@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_feature_network/src/data/dto/feature_network_exception.dart';
 import 'package:flutter_feature_network/src/data/repository/feature_network_repository.dart';
 import 'package:flutter_feature_network/src/domain/interceptor/allowed_ssl_fingerprint_interceptor.dart';
 import 'package:flutter_feature_network/src/domain/plugin/flutter_feature_network.dart';
@@ -42,12 +40,12 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
       };
     }
 
-    if (allowedFingerprints != null) {
-      dio.interceptors.add(AllowedSSLFingerprintInterceptor(allowedSHAFingerprints: allowedFingerprints));
-    }
-
     if (interceptors != null) {
       dio.interceptors.addAll(interceptors);
+    }
+
+    if (allowedFingerprints != null) {
+      dio.interceptors.add(AllowedSSLFingerprintInterceptor(allowedSHAFingerprints: allowedFingerprints));
     }
 
     return dio;
@@ -60,19 +58,12 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
     int timeout = 60,
     required List<String> allowedSHAFingerprints,
   }) async {
-    try {
-      await checkHttpCertificatePinning(
-        serverUrl: serverUrl,
-        sha: sha,
-        allowedSHAFingerprints: allowedSHAFingerprints,
-        timeout: timeout,
-      );
-      return true;
-    } on FeatureNetworkException catch (_) {
-      return false;
-    } catch (_) {
-      return false;
-    }
+    return FlutterFeatureNetwork.isConnectionSecure(
+      serverUrl: serverUrl,
+      sha: sha,
+      allowedSHAFingerprints: allowedSHAFingerprints,
+      timeout: timeout,
+    );
   }
 
   @override
@@ -86,6 +77,7 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
       serverUrl: serverUrl,
       sha: sha,
       allowedSHAFingerprints: allowedSHAFingerprints,
+      timeout: timeout,
     );
   }
 }

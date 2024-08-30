@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:example/data/dto/model/ssl_fingerprint_model.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
 import 'package:example/domain/interceptor/dynamic_ssl_interceptor.dart';
@@ -173,8 +172,8 @@ class _MainPageState extends State<MainPage> {
         HttpHeaders.userAgentHeader: userAgent,
       },
       interceptors: [
-        LoggerInterceptor(),
         GetIt.I.get<Alice>().getDioInterceptor(),
+        LoggerInterceptor(),
       ],
       allowedFingerprints: [
         '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
