@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
@@ -38,4 +41,6 @@ abstract class FeatureNetworkRepository {
     int timeout = 60,
     required List<String> allowedSHAFingerprints,
   });
+
+  Future<Uint8List> getCertificateBytesFromAsset({required String assetPath});
 }
