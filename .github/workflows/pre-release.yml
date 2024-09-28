@@ -30,6 +30,7 @@ jobs:
           flutter --version
       - name: Setup Pub Dev Credential
         run: |
+          mkdir -p ~/.config/dart
           echo ${{ secrets.PUB_CREDENTIAL_JSON }} > ~/.config/dart/pub-credentials.json
           ls ~/.config/dart
           cat ~/.config/dart/pub-credentials.json
