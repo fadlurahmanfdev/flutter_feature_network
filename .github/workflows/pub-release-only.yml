@@ -1,0 +1,33 @@
+name: Publish Pub Dev
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: pub-dev
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout V3
+        uses: actions/checkout@v3
+      - name: Setup Version
+        id: setup
+        run: |
+          echo "TAG VERSION: $GITHUB_REF_NAME"
+          echo "RELEASE VERSION: ${GITHUB_REF_NAME#v}"
+          echo "::set-output name=release_name::${GITHUB_REF_NAME#v}"
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ steps.setup.outputs.release_name }}
+          draft: false
+          prerelease: false
+      - name: Publish To Pub Dev
+        uses: k-paxian/dart-package-publisher@master
+        with:
+          accessToken: ${{ secrets.PUB_ACCESS_TOKEN }}
+          refreshToken: ${{ secrets.PUB_REFRESH_TOKEN }}
+          flutterBranch: 'flutter-3.19-candidate.5'
+          
