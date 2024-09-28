@@ -20,14 +20,21 @@ jobs:
 #          echo "TAG VERSION: $GITHUB_REF_NAME"
 #          echo "RELEASE VERSION: ${GITHUB_REF_NAME#v}"
 #          echo "::set-output name=release_name::${GITHUB_REF_NAME#v}"
-      - name: Set up Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           flutter-version: 3.19.5
-      - run: |
+        run: |
           flutter doctor -v
           flutter --version
+      - name: Setup Pub Dev Credential
+        run: |
+          echo ${{ secrets.PUB_CREDENTIAL_JSON }} > ~/.config/dart/pub-credentials.json
+          ls ~/.config/dart
+          cat ~/.config/dart/pub-credentials.json
+      - name: Pub Dev Dry Run
+        run: |
           flutter pub publish --dry-run
 #      - name: Pub Dry Run
 #        uses: k-paxian/dart-package-publisher@master
