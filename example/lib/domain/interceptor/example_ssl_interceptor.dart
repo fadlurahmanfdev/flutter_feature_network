@@ -8,6 +8,7 @@ class ExampleSSLInterceptor extends SSLInterceptor {
   void onHandshakeException(DioException dioException, ErrorInterceptorHandler handler) async {
     try {
       // on handshake exception
+      handler.next(dioException);
     } catch (e) {
       handler.next(dioException);
     }
