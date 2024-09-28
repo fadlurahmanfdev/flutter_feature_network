@@ -1,0 +1,31 @@
+name: Pre Release (Check Tag & Dry Only Publish Pub Dev)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout V3
+        uses: actions/checkout@v3
+      - name: Setup Version
+        id: setup
+        run: |
+          echo "TAG VERSION: $GITHUB_REF_NAME"
+          echo "RELEASE VERSION: ${GITHUB_REF_NAME#v}"
+          echo "::set-output name=release_name::${GITHUB_REF_NAME#v}"
+      - name: Pub Dry Run
+        uses: k-paxian/dart-package-publisher@master
+        with:
+          accessToken: ${{ secrets.PUB_ACCESS_TOKEN }}
+          refreshToken: ${{ secrets.PUB_REFRESH_TOKEN }}
+          flutterBranch: 'flutter-3.19-candidate.5'
+          dryRunOnly: true
+          force: false
+          
