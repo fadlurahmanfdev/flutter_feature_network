@@ -25,7 +25,8 @@ jobs:
         with:
           channel: stable
           flutter-version: 3.19.5
-      - run: |
+      - name: Check Flutter Version
+        run: |
           flutter doctor -v
           flutter --version
       - name: Setup Pub Dev Credential

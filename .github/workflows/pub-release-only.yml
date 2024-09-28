@@ -29,7 +29,8 @@ jobs:
         with:
           channel: stable
           flutter-version: 3.19.5
-      - run: |
+      - name: Check Flutter Version
+        run: |
           flutter doctor -v
           flutter --version
       - name: Setup Pub Dev Credential
@@ -40,5 +41,5 @@ jobs:
           cat ~/.config/dart/pub-credentials.json
       - name: Publish To Pub Dev
         run: |
-          flutter pub publish
+          flutter pub publish -f
           
