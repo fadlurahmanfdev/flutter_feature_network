@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:alice/alice.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
 import 'package:example/domain/interceptor/dynamic_ssl_interceptor.dart';
@@ -14,7 +15,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feature_network/flutter_feature_network.dart';
 import 'package:get_it/get_it.dart';
-import 'package:flutter_feature_platform/flutter_feature_platform.dart';
+// import 'package:flutter_feature_platform/flutter_feature_platform.dart';
 import 'package:mobx/mobx.dart';
 
 import 'data/dto/model/feature_model.dart';
@@ -46,7 +47,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     FeatureNetworkRepository networkRepository = FeatureNetworkRepositoryImpl();
     GetIt.I.registerFactory<FeatureNetworkRepository>(() => networkRepository);
-    GetIt.I.registerFactory<FeaturePlatformRepository>(() => FeaturePlatformRepositoryImpl());
+    // GetIt.I.registerFactory<FeaturePlatformRepository>(() => FeaturePlatformRepositoryImpl());
     alice = Alice(showNotification: true, showInspectorOnShake: true);
     GetIt.I.registerSingleton(alice);
     remoteConfig = FirebaseRemoteConfig.instance;
@@ -143,12 +144,18 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> init() async {
-    final userAgent = await GetIt.I.get<FeaturePlatformRepository>().getUserAgent();
-    final placeHolderStandardDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient();
+    // final userAgent = await GetIt.I.get<FeaturePlatformRepository>().getUserAgent();
+    final placeHolderStandardDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
+      baseUrl: 'https://jsonplaceholder.typicode.com/',
+      interceptors: [
+        LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+      ],
+    );
     final placeHolderCorrectFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
       baseUrl: 'https://jsonplaceholder.typicode.com/',
       headers: {
-        HttpHeaders.userAgentHeader: userAgent,
+        // HttpHeaders.userAgentHeader: userAgent,
       },
       interceptors: [
         LoggerInterceptor(),
@@ -161,7 +168,7 @@ class _MainPageState extends State<MainPage> {
     final placeHolderIncorrectFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
       baseUrl: 'https://jsonplaceholder.typicode.com/',
       headers: {
-        HttpHeaders.userAgentHeader: userAgent,
+        // HttpHeaders.userAgentHeader: userAgent,
       },
       interceptors: [
         GetIt.I.get<Alice>().getDioInterceptor(),
@@ -174,7 +181,7 @@ class _MainPageState extends State<MainPage> {
     final placeHolderDynamicSslFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
       baseUrl: 'https://jsonplaceholder.typicode.com/',
       headers: {
-        HttpHeaders.userAgentHeader: userAgent,
+        // HttpHeaders.userAgentHeader: userAgent,
       },
       interceptors: [
         DynamicSslInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
@@ -183,13 +190,13 @@ class _MainPageState extends State<MainPage> {
       ],
     );
     final jsonPlaceholderCertByte =
-        await FlutterFeatureNetwork.getCertificateBytesFromAsset(assetPath: 'assets/jsonplaceholder_cert.pem');
+        await FeatureNetwork.getCertificateBytesFromAsset(assetPath: 'assets/jsonplaceholder_cert.pem');
     final wikipediaCertByte =
-        await FlutterFeatureNetwork.getCertificateBytesFromAsset(assetPath: 'assets/wikipedia_cert.pem');
+        await FeatureNetwork.getCertificateBytesFromAsset(assetPath: 'assets/wikipedia_cert.pem');
     final correctCertificateByteDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
           baseUrl: 'https://jsonplaceholder.typicode.com/',
           headers: {
-            HttpHeaders.userAgentHeader: userAgent,
+            // HttpHeaders.userAgentHeader: userAgent,
           },
           interceptors: [
             GetIt.I.get<Alice>().getDioInterceptor(),
@@ -197,10 +204,10 @@ class _MainPageState extends State<MainPage> {
           ],
           trustedCertificateBytes: jsonPlaceholderCertByte,
         );
-    final incorrectCertificateByteDio = FlutterFeatureNetwork.getDioClient(
+    final incorrectCertificateByteDio = FeatureNetwork.getDioClient(
           baseUrl: 'https://jsonplaceholder.typicode.com/',
           headers: {
-            HttpHeaders.userAgentHeader: userAgent,
+            // HttpHeaders.userAgentHeader: userAgent,
           },
           interceptors: [
             ExampleSSLInterceptor(),
