@@ -68,7 +68,8 @@ class DynamicSslInterceptor extends SSLInterceptor {
 
   @override
   void onHandshakeException(DioException dioException, ErrorInterceptorHandler handler) async {
-    try {} catch (e) {
+    try {
+    } catch (e) {
       handler.next(dioException);
     }
   }

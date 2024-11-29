@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:example/data/dto/model/feature_exception.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
@@ -24,6 +26,8 @@ abstract class MainStoreBase with Store {
       await repositoryDatasource.getPostById(id: 1);
       fetchNetworkState = FetchNetworkSuccessState();
     } on FeatureException catch (e) {
+      log("failed get post by id: ${e.title}");
+      log("failed get post by id: ${e.desc}");
       fetchNetworkState = FetchNetworkFailedState(exception: e);
     }
   }

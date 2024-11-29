@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_feature_network/src/data/repository/feature_network_repository.dart';
-import 'package:flutter_feature_network/src/domain/plugin/flutter_feature_network.dart';
+import 'package:flutter_feature_network/src/feature_network.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
 class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
@@ -17,7 +17,7 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
     List<int>? trustedCertificateBytes,
     List<String>? allowedFingerprints,
   }) =>
-      FlutterFeatureNetwork.getDioClient(
+      FeatureNetwork.getDioClient(
         receiveTimeout: receiveTimeout,
         sendTimeout: sendTimeout,
         connectTimeout: connectTimeout,
@@ -35,7 +35,7 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
     int timeout = 60,
     required List<String> allowedSHAFingerprints,
   }) =>
-      FlutterFeatureNetwork.isConnectionSecure(
+      FeatureNetwork.isConnectionSecure(
         serverUrl: serverUrl,
         sha: sha,
         allowedSHAFingerprints: allowedSHAFingerprints,
@@ -49,7 +49,7 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
     int timeout = 60,
     required List<String> allowedSHAFingerprints,
   }) =>
-      FlutterFeatureNetwork.checkHttpCertificatePinning(
+      FeatureNetwork.checkHttpCertificatePinning(
         serverUrl: serverUrl,
         sha: sha,
         allowedSHAFingerprints: allowedSHAFingerprints,
@@ -58,5 +58,5 @@ class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
 
   @override
   Future<Uint8List> getCertificateBytesFromAsset({required String assetPath}) =>
-      FlutterFeatureNetwork.getCertificateBytesFromAsset(assetPath: assetPath);
+      FeatureNetwork.getCertificateBytesFromAsset(assetPath: assetPath);
 }

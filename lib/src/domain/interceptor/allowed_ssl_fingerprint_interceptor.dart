@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_feature_network/src/data/dto/feature_network_exception.dart';
-import 'package:flutter_feature_network/src/domain/plugin/flutter_feature_network.dart';
+import 'package:flutter_feature_network/src/feature_network.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 import 'package:logger/logger.dart';
 
@@ -20,7 +20,7 @@ class AllowedSSLFingerprintInterceptor extends InterceptorsWrapper {
     }
 
     try {
-      await FlutterFeatureNetwork.checkHttpCertificatePinning(
+      await FeatureNetwork.checkHttpCertificatePinning(
         serverUrl: baseUrl,
         sha: SHA.SHA256,
         allowedSHAFingerprints: allowedSHAFingerprints,

@@ -8,7 +8,7 @@ import 'package:flutter_feature_network/src/data/dto/feature_network_exception.d
 import 'package:flutter_feature_network/src/domain/interceptor/allowed_ssl_fingerprint_interceptor.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
-class FlutterFeatureNetwork {
+class FeatureNetwork {
   static Dio getDioClient({
     Duration? receiveTimeout,
     Duration? sendTimeout,
