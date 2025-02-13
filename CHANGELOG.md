@@ -1,3 +1,8 @@
+## 0.0.4
+
+###
+* enhance some feature
+
 ## 0.0.3-beta
 
 ###

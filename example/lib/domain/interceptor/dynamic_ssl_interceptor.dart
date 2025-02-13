@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_feature_network/flutter_feature_network.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
-class DynamicSslInterceptor extends SSLInterceptor {
+class DynamicSslInterceptor extends InterceptorsWrapper {
   FirebaseRemoteConfig remoteConfig;
 
   DynamicSslInterceptor({required this.remoteConfig});
@@ -63,14 +63,6 @@ class DynamicSslInterceptor extends SSLInterceptor {
       );
     } catch (e) {
       handler.next(options);
-    }
-  }
-
-  @override
-  void onHandshakeException(DioException dioException, ErrorInterceptorHandler handler) async {
-    try {
-    } catch (e) {
-      handler.next(dioException);
     }
   }
 }
