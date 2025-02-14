@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:alice/alice.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
 import 'package:example/domain/interceptor/configurable_ssl_interceptor.dart';
-import 'package:example/domain/interceptor/example_ssl_interceptor.dart';
+import 'package:example/domain/interceptor/downloadable_ssl_interceptor.dart';
 import 'package:example/firebase_options.dart';
 import 'package:example/presentation/main_store.dart';
 import 'package:example/presentation/widget/feature_widget.dart';
@@ -130,6 +128,11 @@ class _MainPageState extends State<MainPage> {
       desc: 'Fetched Post - Incorrect Certificate Byte',
       key: 'FETCHED_POST_INCORRECT_CERTIFICATE_BYTE',
     ),
+    FeatureModel(
+      title: 'Fetched Post',
+      desc: 'Fetched Post - Downloadable Certificate Byte',
+      key: 'FETCHED_POST_DOWNLOADABLE_CERTIFICATE_BYTE',
+    ),
   ];
   List<ReactionDisposer> reactions = [];
 
@@ -209,8 +212,8 @@ class _MainPageState extends State<MainPage> {
         },
       )),
       prefixInterceptors: [
-        GetIt.I.get<Alice>().getDioInterceptor(),
         LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
       ],
       trustedCertificateBytes: jsonPlaceholderCertByte,
     );
@@ -222,9 +225,23 @@ class _MainPageState extends State<MainPage> {
         },
       )),
       prefixInterceptors: [
-        ExampleSSLInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
         LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+      ],
+      trustedCertificateBytes: wikipediaCertByte,
+    );
+
+    final downloadableSSLCertificateByteDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+        headers: {
+          // HttpHeaders.userAgentHeader: userAgent,
+        },
+      )),
+      prefixInterceptors: [
+        LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+        DownloadableSSLInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
       ],
       trustedCertificateBytes: wikipediaCertByte,
     );
@@ -236,6 +253,7 @@ class _MainPageState extends State<MainPage> {
         placeHolderConfigurableFingerprintDio: placeHolderConfigurableSslFingerprintDio,
         placeHolderCorrectCertByteDio: correctCertificateByteDio,
         placeHolderIncorrectCertByteDio: incorrectCertificateByteDio,
+        placeHolderDownloadableCertByteDio: downloadableSSLCertificateByteDio,
       ),
     );
     reactions = [
@@ -287,6 +305,9 @@ class _MainPageState extends State<MainPage> {
                         break;
                       case "FETCHED_POST_INCORRECT_CERTIFICATE_BYTE":
                         mainStore.getPostByIdIncorrectCertByte();
+                        break;
+                      case "FETCHED_POST_DOWNLOADABLE_CERTIFICATE_BYTE":
+                        mainStore.getPostByIdDownloadableCertByte();
                         break;
                     }
                   },

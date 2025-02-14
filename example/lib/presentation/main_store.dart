@@ -87,4 +87,15 @@ abstract class MainStoreBase with Store {
       fetchNetworkState = FetchNetworkFailedState(exception: e);
     }
   }
+
+  @action
+  Future<void> getPostByIdDownloadableCertByte() async {
+    try {
+      fetchNetworkState = FetchNetworkLoadingState();
+      await repositoryDatasource.getPostByIdDownloadableCertByte(id: 1);
+      fetchNetworkState = FetchNetworkSuccessState();
+    } on FeatureException catch (e) {
+      fetchNetworkState = FetchNetworkFailedState(exception: e);
+    }
+  }
 }
