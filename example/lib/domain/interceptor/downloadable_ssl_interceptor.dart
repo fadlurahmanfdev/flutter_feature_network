@@ -21,7 +21,8 @@ class DownloadableSSLInterceptor extends NetworxHandshakeSSLInterceptor {
       if (tempDirectory.existsSync()) {
         log("start processing fetch remote config");
         await remoteConfig.fetchAndActivate();
-        Map<String, String> sslCertModel = json.decode(remoteConfig.getString('SSL_CERTIFICATE'));
+        final sslCertStringValue = remoteConfig.getString('SSL_CERTIFICATE');
+        final sslCertModel = json.decode(sslCertStringValue) as Map<String, dynamic>;
         log("get map ssl cert model: $sslCertModel");
         final sslCertName = sslCertModel['name'];
         final sslCertUrl = sslCertModel['url'];
@@ -40,27 +41,33 @@ class DownloadableSSLInterceptor extends NetworxHandshakeSSLInterceptor {
           if (newPemCertificateFile.existsSync()) {
             log("pem file already downloaded into ${newPemCertificateFile.path}");
             log("retry last request with new pem file");
-            final retryableDio = NetworxDio.getClient(
-              dio: Dio(),
-              trustedCertificateBytes: newPemCertificateFile.readAsBytesSync(),
-            );
-            final retryResponse = await retryableDio.fetch(dioException.requestOptions);
-            log("successfully retry response");
-            handler.resolve(retryResponse);
+            await retry(newPemCertificateFile: newPemCertificateFile, dioException: dioException, handler: handler);
           } else {
             log("pem file not exist in ${newPemCertificateFile.path}");
             handler.next(dioException);
           }
         } else {
           log("file with ${newPemCertificateFile.path} already exist on device");
-          handler.next(dioException);
+          await retry(newPemCertificateFile: newPemCertificateFile, dioException: dioException, handler: handler);
         }
       } else {
         log("directory not exist");
         handler.next(dioException);
       }
     } catch (e) {
+      log("something happened: ${e}");
       handler.next(DioException(requestOptions: dioException.requestOptions, type: DioExceptionType.unknown, error: e));
     }
   }
+
+  Future<void> retry({required File newPemCertificateFile, required DioException dioException, required ErrorInterceptorHandler handler}) async {
+    final retryableDio = NetworxDio.getClient(
+      dio: Dio(),
+      trustedCertificateBytes: newPemCertificateFile.readAsBytesSync(),
+    );
+    final retryResponse = await retryableDio.fetch(dioException.requestOptions);
+    log("successfully retry response");
+    handler.resolve(retryResponse);
+  }
+
 }
