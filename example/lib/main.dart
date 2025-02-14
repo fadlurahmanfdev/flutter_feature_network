@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:alice/alice.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
-import 'package:example/domain/interceptor/dynamic_ssl_interceptor.dart';
+import 'package:example/domain/interceptor/configurable_ssl_interceptor.dart';
 import 'package:example/domain/interceptor/example_ssl_interceptor.dart';
 import 'package:example/firebase_options.dart';
 import 'package:example/presentation/main_store.dart';
@@ -13,10 +13,10 @@ import 'package:example/presentation/widget/loading_dialog.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_feature_network/flutter_feature_network.dart';
+import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-// import 'package:flutter_feature_platform/flutter_feature_platform.dart';
 import 'package:mobx/mobx.dart';
+import 'package:networx/flutter_feature_network.dart';
 
 import 'data/dto/model/feature_model.dart';
 
@@ -45,8 +45,8 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    FeatureNetworkRepository networkRepository = FeatureNetworkRepositoryImpl();
-    GetIt.I.registerFactory<FeatureNetworkRepository>(() => networkRepository);
+    NetworxDio networkRepository = NetworxDio();
+    GetIt.I.registerFactory<NetworxDio>(() => networkRepository);
     // GetIt.I.registerFactory<FeaturePlatformRepository>(() => FeaturePlatformRepositoryImpl());
     alice = Alice(showNotification: true, showInspectorOnShake: true);
     GetIt.I.registerSingleton(alice);
@@ -71,7 +71,7 @@ class _MyAppState extends State<MyApp> {
     return isAllFullySetup
         ? MaterialApp(
             navigatorKey: alice.getNavigatorKey(),
-            title: 'Flutter Feature Network',
+            title: 'Networx',
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
               useMaterial3: true,
@@ -79,7 +79,7 @@ class _MyAppState extends State<MyApp> {
             home: const MainPage(),
           )
         : MaterialApp(
-            title: 'Flutter Feature Network - Non Alice',
+            title: 'Networx - Non Alice',
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
               useMaterial3: true,
@@ -117,8 +117,8 @@ class _MainPageState extends State<MainPage> {
     ),
     FeatureModel(
       title: 'Fetched Post',
-      desc: 'Fetched Post - Dynamic Fingerprint',
-      key: 'FETCHED_POST_DYNAMIC_FINGERPRINT',
+      desc: 'Fetched Post - Configurable Fingerprint',
+      key: 'FETCHED_POST_CONFIGURABLE_FINGERPRINT',
     ),
     FeatureModel(
       title: 'Fetched Post',
@@ -145,83 +145,95 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> init() async {
     // final userAgent = await GetIt.I.get<FeaturePlatformRepository>().getUserAgent();
-    final placeHolderStandardDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
-      baseUrl: 'https://jsonplaceholder.typicode.com/',
-      interceptors: [
+    final placeHolderStandardDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+      )),
+      prefixInterceptors: [
         LoggerInterceptor(),
         GetIt.I.get<Alice>().getDioInterceptor(),
       ],
+      suffixInterceptors: [],
     );
-    final placeHolderCorrectFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
-      baseUrl: 'https://jsonplaceholder.typicode.com/',
-      headers: {
-        // HttpHeaders.userAgentHeader: userAgent,
-      },
-      interceptors: [
+    final placeHolderCorrectFingerprintDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+        headers: {
+          // HttpHeaders.userAgentHeader: userAgent,
+        },
+      )),
+      prefixInterceptors: [
         LoggerInterceptor(),
         GetIt.I.get<Alice>().getDioInterceptor(),
       ],
       allowedFingerprints: [
-        '14f9996f9481eac7f9c005f6954c2f032d8e9cb13d4440ebed35f14bed22c43f',
+        'c19017fc3b6d30f06dae6f7049f296560212b6ac826fe0e3ca24dd1b4912e92b',
       ],
     );
-    final placeHolderIncorrectFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
-      baseUrl: 'https://jsonplaceholder.typicode.com/',
-      headers: {
-        // HttpHeaders.userAgentHeader: userAgent,
-      },
-      interceptors: [
-        GetIt.I.get<Alice>().getDioInterceptor(),
+    final placeHolderIncorrectFingerprintDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+        headers: {
+          // HttpHeaders.userAgentHeader: userAgent,
+        },
+      )),
+      prefixInterceptors: [
         LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
       ],
       allowedFingerprints: [
         '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
       ],
     );
-    final placeHolderDynamicSslFingerprintDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
-      baseUrl: 'https://jsonplaceholder.typicode.com/',
-      headers: {
-        // HttpHeaders.userAgentHeader: userAgent,
-      },
-      interceptors: [
-        DynamicSslInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
-        GetIt.I.get<Alice>().getDioInterceptor(),
+    final placeHolderConfigurableSslFingerprintDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+        headers: {
+          // HttpHeaders.userAgentHeader: userAgent,
+        },
+      )),
+      prefixInterceptors: [
         LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+        ConfigurableSSLInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
       ],
     );
     final jsonPlaceholderCertByte =
-        await FeatureNetwork.getCertificateBytesFromAsset(assetPath: 'assets/jsonplaceholder_cert.pem');
-    final wikipediaCertByte =
-        await FeatureNetwork.getCertificateBytesFromAsset(assetPath: 'assets/wikipedia_cert.pem');
-    final correctCertificateByteDio = GetIt.I.get<FeatureNetworkRepository>().getDioClient(
-          baseUrl: 'https://jsonplaceholder.typicode.com/',
-          headers: {
-            // HttpHeaders.userAgentHeader: userAgent,
-          },
-          interceptors: [
-            GetIt.I.get<Alice>().getDioInterceptor(),
-            LoggerInterceptor(),
-          ],
-          trustedCertificateBytes: jsonPlaceholderCertByte,
-        );
-    final incorrectCertificateByteDio = FeatureNetwork.getDioClient(
-          baseUrl: 'https://jsonplaceholder.typicode.com/',
-          headers: {
-            // HttpHeaders.userAgentHeader: userAgent,
-          },
-          interceptors: [
-            ExampleSSLInterceptor(),
-            GetIt.I.get<Alice>().getDioInterceptor(),
-            LoggerInterceptor(),
-          ],
-          trustedCertificateBytes: wikipediaCertByte,
-        );
+        await NetworxUtils.getCertificateBytesFromAsset(assetPath: 'assets/jsonplaceholder_cert.pem');
+    final wikipediaCertByte = await NetworxUtils.getCertificateBytesFromAsset(assetPath: 'assets/wikipedia_cert.pem');
+    final correctCertificateByteDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+        headers: {
+          // HttpHeaders.userAgentHeader: userAgent,
+        },
+      )),
+      prefixInterceptors: [
+        GetIt.I.get<Alice>().getDioInterceptor(),
+        LoggerInterceptor(),
+      ],
+      trustedCertificateBytes: jsonPlaceholderCertByte,
+    );
+    final incorrectCertificateByteDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+        headers: {
+          // HttpHeaders.userAgentHeader: userAgent,
+        },
+      )),
+      prefixInterceptors: [
+        ExampleSSLInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+        LoggerInterceptor(),
+      ],
+      trustedCertificateBytes: wikipediaCertByte,
+    );
     mainStore = MainStore(
       repositoryDatasource: RepositoryDatasourceImpl(
         placeHolderStandardDio: placeHolderStandardDio,
         placeHolderCorrectFingerprintDio: placeHolderCorrectFingerprintDio,
         placeHolderIncorrectFingerprintDio: placeHolderIncorrectFingerprintDio,
-        placeHolderDynamicFingerprintDio: placeHolderDynamicSslFingerprintDio,
+        placeHolderConfigurableFingerprintDio: placeHolderConfigurableSslFingerprintDio,
         placeHolderCorrectCertByteDio: correctCertificateByteDio,
         placeHolderIncorrectCertByteDio: incorrectCertificateByteDio,
       ),
@@ -248,7 +260,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('NETWORK')),
+      appBar: AppBar(title: const Text('NETWORX')),
       body: isInitialized
           ? ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -267,8 +279,8 @@ class _MainPageState extends State<MainPage> {
                       case "FETCHED_POST_INCORRECT_FINGERPRINT":
                         mainStore.getPostByIdIncorrectFingerprint();
                         break;
-                      case "FETCHED_POST_DYNAMIC_FINGERPRINT":
-                        mainStore.getPostByIdDynamicFingerprint();
+                      case "FETCHED_POST_CONFIGURABLE_FINGERPRINT":
+                        mainStore.getPostByIdConfigurableFingerprint();
                         break;
                       case "FETCHED_POST_CORRECT_CERTIFICATE_BYTE":
                         mainStore.getPostByIdCorrectCertByte();

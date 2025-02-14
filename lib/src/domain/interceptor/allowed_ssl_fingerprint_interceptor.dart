@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_feature_network/src/data/dto/feature_network_exception.dart';
-import 'package:flutter_feature_network/src/feature_network.dart';
+import 'package:networx/src/data/dto/feature_network_exception.dart';
+import 'package:networx/src/feature_network.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 import 'package:logger/logger.dart';
 
+@Deprecated('Deprecated in v1.x.x, removed in v2.x.x. Replace with NetworxCertificatePinningInterceptor')
 class AllowedSSLFingerprintInterceptor extends InterceptorsWrapper {
   List<String> allowedSHAFingerprints;
 

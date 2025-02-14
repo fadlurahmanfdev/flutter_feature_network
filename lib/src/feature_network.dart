@@ -4,10 +4,11 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_feature_network/src/data/dto/feature_network_exception.dart';
-import 'package:flutter_feature_network/src/domain/interceptor/allowed_ssl_fingerprint_interceptor.dart';
+import 'package:networx/src/data/dto/feature_network_exception.dart';
+import 'package:networx/src/domain/interceptor/allowed_ssl_fingerprint_interceptor.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
+@Deprecated('Deprecated in v1.x.x, removed in v2.x.x.')
 class FeatureNetwork {
   static Dio getDioClient({
     Duration? receiveTimeout,

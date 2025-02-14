@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 
+@Deprecated('Deprecated in v1.x.x, removed in v2.x.x. Replace with NetworxHandshakeSSLInterceptor')
 abstract class SSLInterceptor extends InterceptorsWrapper {
   void onHandshakeException(DioException dioException, ErrorInterceptorHandler handler);
 

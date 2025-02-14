@@ -1,10 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_feature_network/src/data/repository/feature_network_repository.dart';
-import 'package:flutter_feature_network/src/feature_network.dart';
+import 'package:networx/src/data/repository/feature_network_repository.dart';
+import 'package:networx/src/feature_network.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
+@Deprecated('Deprecated in v1.x.x, removed in v2.x.x.')
 class FeatureNetworkRepositoryImpl extends FeatureNetworkRepository {
   @override
   Dio getDioClient({

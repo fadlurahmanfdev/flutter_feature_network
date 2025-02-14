@@ -1,9 +1,7 @@
-import 'package:flutter/services.dart';
-import 'package:flutter_feature_network/flutter_feature_network.dart';
+import 'package:dio/dio.dart';
+import 'package:networx/flutter_feature_network.dart';
 
-class ExampleSSLInterceptor extends SSLInterceptor {
-  FeatureNetworkRepository networkRepository = FeatureNetworkRepositoryImpl();
-
+class ExampleSSLInterceptor extends NetworxHandshakeSSLInterceptor {
   @override
   void onHandshakeException(DioException dioException, ErrorInterceptorHandler handler) async {
     try {

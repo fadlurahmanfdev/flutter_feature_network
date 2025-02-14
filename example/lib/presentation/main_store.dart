@@ -39,6 +39,7 @@ abstract class MainStoreBase with Store {
       await repositoryDatasource.getPostByIdCorrectFingerprint(id: 1);
       fetchNetworkState = FetchNetworkSuccessState();
     } on FeatureException catch (e) {
+      print("masuk sini ${e.title} & ${e.desc}");
       fetchNetworkState = FetchNetworkFailedState(exception: e);
     }
   }
@@ -55,10 +56,10 @@ abstract class MainStoreBase with Store {
   }
 
   @action
-  Future<void> getPostByIdDynamicFingerprint() async {
+  Future<void> getPostByIdConfigurableFingerprint() async {
     try {
       fetchNetworkState = FetchNetworkLoadingState();
-      await repositoryDatasource.getPostByIdDynamicFingerprint(id: 1);
+      await repositoryDatasource.getPostByIdConfigurableFingerprint(id: 1);
       fetchNetworkState = FetchNetworkSuccessState();
     } on FeatureException catch (e) {
       fetchNetworkState = FetchNetworkFailedState(exception: e);

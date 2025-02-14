@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 
+@Deprecated('Deprecated in v1.x.x, removed in v2.x.x.')
 abstract class FeatureNetworkRepository {
   Dio getDioClient({
     Duration? receiveTimeout,
