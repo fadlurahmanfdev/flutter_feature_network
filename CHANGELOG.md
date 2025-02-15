@@ -1,24 +1,5 @@
-## 0.0.4
-
-###
-* enhance some feature
-
-## 0.0.3-beta
-
-###
-* enhance some feature
-
-## 0.0.2
-
-###
-* Add Plugin FlutterFeatureNetwork
-* Add Get Certificate Byte By Asset Path
-
-### Change
-* Change Method HttpCertificatePinning
-* Update Docs
-
-
 ## 0.0.1
 
-* Initial Release
+* Configurable Dio Network Using SSL
+* Retryable DIO using SSL
+* Abstract SSL Interceptor
