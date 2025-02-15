@@ -2,13 +2,14 @@
 
 Networking library to support API Request by dio package & simplified SSL Security operation.
 
-<details>
-  <summary>Table of content</summary>
+# Table Of Content
 * [Key Feature](#key-feature) 
 * [Get Started](#get-started)
-    * [Generate Dio Client]
-</details>
-* [Key Feature](#key-feature) 
+* [Import](#import)
+* [Generate Dio Client](#generate-dio-client)
+* [Check Whether Connection Secure](#check-whether-connection-secure) 
+* [Get Pem Certificate](#get-pem-certificate-bytes-from-asset) 
+* [Example](#example)
 
 ## Key Feature
 
@@ -51,7 +52,7 @@ final rawDio = NetworxDio.getClient(
 | `allowedFingerprints`                 | List<String>                         | no        | A list of allowed SSL certificate SHA fingerprints for secure connections. <br> Only one of `trustedCertificateBytes` or `allowedFingerprints` allowed. </br> |
 | `customCertificatePinningInterceptor` | NetworxCertificatePinningInterceptor | no        | Custom interceptor for check http certificate pinning. <br> Only one of `allowedFingerprints` or `customCertificatePinningInterceptor` allowed. </br>         |
 
-### Is Connection Secure
+### Check Whether Connection Secure
 
 This is will checked if the connection using certificate is secure.
 
@@ -87,4 +88,6 @@ final certificateBytes = NetworxUtils.getCertificateBytesFromAsset(assethPath: '
 | `assethPath`   | String | true     | The location of asset path. |
 
 # Example
+
+For detail example, check the example app [example](https://github.com/fadlurahmanfdev/flutter_feature_network/blob/dev-split-networking/example/lib/main.dart)
 
