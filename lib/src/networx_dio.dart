@@ -15,10 +15,10 @@ class NetworxDio {
   /// [allowedFingerprints] cannot be used with [customCertificatePinningInterceptor], only one of them can be used.
   ///
   /// - [dio] - The dio client that will add ssl feature
-  /// - [prefixInterceptors] - The interceptors added in the first section.
-  /// - [suffixInterceptors] - The interceptors added in the last section.
-  /// - [trustedCertificateBytes] - The pem certificate that already loaded as uint8list.
-  /// - [customHandshakeSSLInterceptor] - Custom interceptor
+  /// - [prefixInterceptors] - The interceptors added in the first section before the other interceptor.
+  /// - [suffixInterceptors] - The interceptors added in the last section after all the other interceptor.
+  /// - [trustedCertificateBytes] - The pem certificate for ssl checking in bytes type.
+  /// - [customHandshakeSSLInterceptor] - Custom interceptor for pem certificate checking.
   /// - [allowedFingerprints] - The fingerprints that will checked with URL HTTP Certificate.
   /// - [customCertificatePinningInterceptor] - Custom interceptor for check http certificate pinning.
   static Dio getClient({
