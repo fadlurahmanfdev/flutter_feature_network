@@ -55,7 +55,7 @@ class DownloadableSSLInterceptor extends NetworxHandshakeSSLInterceptor {
         handler.next(dioException);
       }
     } catch (e) {
-      log("something happened: ${e}");
+      log("something happened: $e");
       handler.next(DioException(requestOptions: dioException.requestOptions, type: DioExceptionType.unknown, error: e));
     }
   }
