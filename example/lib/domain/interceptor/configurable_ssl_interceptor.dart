@@ -4,14 +4,14 @@ import 'dart:io';
 
 import 'package:example/data/dto/model/ssl_fingerprint_model.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_feature_network/flutter_feature_network.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
+import 'package:dio/dio.dart';
+import 'package:networx/networx.dart';
 
-class DynamicSslInterceptor extends SSLInterceptor {
+class ConfigurableSSLInterceptor extends InterceptorsWrapper {
   FirebaseRemoteConfig remoteConfig;
 
-  DynamicSslInterceptor({required this.remoteConfig});
+  ConfigurableSSLInterceptor({required this.remoteConfig});
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
@@ -26,22 +26,21 @@ class DynamicSslInterceptor extends SSLInterceptor {
       final jsonStringValue = remoteConfig.getString('SSL_FINGERPRINT');
       final jsonValue = json.decode(jsonStringValue);
       final SslFingerprintModel sslFingerprintModel = SslFingerprintModel.fromJson(jsonValue as Map<String, dynamic>);
-      log("ssl model: $sslFingerprintModel");
-      final secure = await HttpCertificatePinning.check(
-        serverURL: baseUrl,
-        headerHttp: {},
+      log("SSL inside remote config: $sslFingerprintModel");
+      final isSecure = await NetworxSecurity.isConnectionSecure(
+        serverUrl: baseUrl,
         sha: SHA.SHA256,
         allowedSHAFingerprints: sslFingerprintModel.fingerprints ?? [],
         timeout: 60,
       );
-      if (secure.contains('CONNECTION_SECURE')) {
+      if (isSecure) {
         handler.next(options);
       } else {
         handler.reject(
           DioException(
             requestOptions: options,
             type: DioExceptionType.badCertificate,
-            error: HandshakeException('Connection is not secure: $secure'),
+            error: const HandshakeException('Connection is not secure'),
             response: Response(
               requestOptions: options,
               statusCode: 495,
@@ -49,12 +48,12 @@ class DynamicSslInterceptor extends SSLInterceptor {
           ),
         );
       }
-    } on PlatformException catch (e) {
+    } on NetworxException catch (e) {
       handler.reject(
         DioException(
           requestOptions: options,
           type: DioExceptionType.badCertificate,
-          error: HandshakeException('Connection is not secure: $e'),
+          error: e,
           response: Response(
             requestOptions: options,
             statusCode: 495,
@@ -62,15 +61,11 @@ class DynamicSslInterceptor extends SSLInterceptor {
         ),
       );
     } catch (e) {
-      handler.next(options);
-    }
-  }
-
-  @override
-  void onHandshakeException(DioException dioException, ErrorInterceptorHandler handler) async {
-    try {
-    } catch (e) {
-      handler.next(dioException);
+      handler.reject(DioException(
+        requestOptions: options,
+        type: DioExceptionType.unknown,
+        error: e,
+      ),);
     }
   }
 }

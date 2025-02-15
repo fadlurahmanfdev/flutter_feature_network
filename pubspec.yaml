@@ -1,6 +1,6 @@
-name: flutter_feature_network
-description: "Flutter Feature Networking"
-version: 0.0.3-beta
+name: networx
+description: "Network library perform API request through dio, add ons with SSL Checking"
+version: 0.0.1
 homepage: https://github.com/fadlurahmanfdev/flutter_feature_network
 
 environment:
@@ -11,10 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-#  fadlurahmanfdev_alice: ^0.0.1
-  dio: ^5.5.0+1
+  dio: ^5.8.0+1
   http_certificate_pinning: ^2.1.2
-  logger: ^2.3.0
+  logger: ^2.5.0
 
 dev_dependencies:
   flutter_test:

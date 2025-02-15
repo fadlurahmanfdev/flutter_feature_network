@@ -32,5 +32,3 @@ build/
 *.g.dart
 
 *.pem
-
-local_*.sh

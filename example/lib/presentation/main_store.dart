@@ -39,6 +39,7 @@ abstract class MainStoreBase with Store {
       await repositoryDatasource.getPostByIdCorrectFingerprint(id: 1);
       fetchNetworkState = FetchNetworkSuccessState();
     } on FeatureException catch (e) {
+      print("masuk sini ${e.title} & ${e.desc}");
       fetchNetworkState = FetchNetworkFailedState(exception: e);
     }
   }
@@ -55,10 +56,21 @@ abstract class MainStoreBase with Store {
   }
 
   @action
-  Future<void> getPostByIdDynamicFingerprint() async {
+  Future<void> getPostByIdRetryableFingerprint() async {
     try {
       fetchNetworkState = FetchNetworkLoadingState();
-      await repositoryDatasource.getPostByIdDynamicFingerprint(id: 1);
+      await repositoryDatasource.getPostByIdRetryableIncorrectFingerprint(id: 1);
+      fetchNetworkState = FetchNetworkSuccessState();
+    } on FeatureException catch (e) {
+      fetchNetworkState = FetchNetworkFailedState(exception: e);
+    }
+  }
+
+  @action
+  Future<void> getPostByIdConfigurableFingerprint() async {
+    try {
+      fetchNetworkState = FetchNetworkLoadingState();
+      await repositoryDatasource.getPostByIdConfigurableFingerprint(id: 1);
       fetchNetworkState = FetchNetworkSuccessState();
     } on FeatureException catch (e) {
       fetchNetworkState = FetchNetworkFailedState(exception: e);
@@ -81,6 +93,17 @@ abstract class MainStoreBase with Store {
     try {
       fetchNetworkState = FetchNetworkLoadingState();
       await repositoryDatasource.getPostByIdIncorrectCertByte(id: 1);
+      fetchNetworkState = FetchNetworkSuccessState();
+    } on FeatureException catch (e) {
+      fetchNetworkState = FetchNetworkFailedState(exception: e);
+    }
+  }
+
+  @action
+  Future<void> getPostByIdDownloadableCertByte() async {
+    try {
+      fetchNetworkState = FetchNetworkLoadingState();
+      await repositoryDatasource.getPostByIdDownloadableCertByte(id: 1);
       fetchNetworkState = FetchNetworkSuccessState();
     } on FeatureException catch (e) {
       fetchNetworkState = FetchNetworkFailedState(exception: e);

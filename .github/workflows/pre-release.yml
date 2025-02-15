@@ -3,7 +3,7 @@ name: Pre Release (Check Tag & Dry Only Publish Pub Dev)
 on:
   push:
     tags:
-      - 'v*'
+      - 'v-networx-*'
 
 jobs:
   build:
@@ -24,7 +24,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.19.5
+          flutter-version: 3.10.6
       - name: Check Flutter Version
         run: |
           flutter doctor -v
