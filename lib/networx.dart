@@ -15,6 +15,7 @@ library networx;
 
 // New
 export 'src/interceptor/logger_interceptor.dart';
+export 'src/interceptor/networx_certificate_pinning_interceptor.dart';
 export 'src/interceptor/networx_handshake_ssl_interceptor.dart';
 
 export 'src/exception/networx_exception.dart';

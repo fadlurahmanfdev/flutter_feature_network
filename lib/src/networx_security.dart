@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/services.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 import 'package:networx/src/constant/exception_constant.dart';
@@ -7,6 +5,10 @@ import 'package:networx/src/exception/networx_exception.dart';
 
 class NetworxSecurity {
   /// Check whether the connection secure by compare fingerprint & url http of current
+  /// - [serverUrl] - which url want to checked
+  /// - [sha] - type of SHA fingerprint,
+  /// - [allowedSHAFingerprints] - SHA fingerprints that will be check with [serverUrl]
+  /// - [timeout] - how long it take to stop process.
   static Future<bool> isConnectionSecure({
     required String serverUrl,
     Map<String, String>? headerHttp,
@@ -27,7 +29,6 @@ class NetworxSecurity {
       }
       return false;
     } on PlatformException catch (e) {
-      log("failed check http certificate pinning: ${e.code}, ${e.message}");
       throw NetworxException(code: ExceptionConstant.BAD_FINGERPRINT.code, message: e.message);
     }
   }

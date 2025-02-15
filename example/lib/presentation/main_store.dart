@@ -56,6 +56,17 @@ abstract class MainStoreBase with Store {
   }
 
   @action
+  Future<void> getPostByIdRetryableFingerprint() async {
+    try {
+      fetchNetworkState = FetchNetworkLoadingState();
+      await repositoryDatasource.getPostByIdRetryableIncorrectFingerprint(id: 1);
+      fetchNetworkState = FetchNetworkSuccessState();
+    } on FeatureException catch (e) {
+      fetchNetworkState = FetchNetworkFailedState(exception: e);
+    }
+  }
+
+  @action
   Future<void> getPostByIdConfigurableFingerprint() async {
     try {
       fetchNetworkState = FetchNetworkLoadingState();

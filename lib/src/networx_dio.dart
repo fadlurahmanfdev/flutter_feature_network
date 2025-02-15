@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:networx/flutter_feature_network.dart';
 import 'package:networx/src/interceptor/networx_certificate_pinning_interceptor.dart';
+import 'package:networx/src/interceptor/networx_handshake_ssl_interceptor.dart';
 
 class NetworxDio {
   /// Generate Dio Client with SSL Security feature.

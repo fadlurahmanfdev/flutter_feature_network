@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:networx/flutter_feature_network.dart';
+import 'package:networx/networx.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DownloadableSSLInterceptor extends NetworxHandshakeSSLInterceptor {

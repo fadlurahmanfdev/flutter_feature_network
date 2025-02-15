@@ -4,10 +4,9 @@ import 'dart:io';
 
 import 'package:example/data/dto/model/ssl_fingerprint_model.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:flutter/services.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
 import 'package:dio/dio.dart';
-import 'package:networx/flutter_feature_network.dart';
+import 'package:networx/networx.dart';
 
 class ConfigurableSSLInterceptor extends InterceptorsWrapper {
   FirebaseRemoteConfig remoteConfig;

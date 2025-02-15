@@ -51,7 +51,7 @@ class LoggerInterceptor extends InterceptorsWrapper {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (showLogError) {
-      String loggerText = "ERROR API-RESPONSE";
+      String loggerText = "ERROR API REQUEST";
       loggerText += "\nERROR TYPE: ${err.type}";
       loggerText += "\nAPI PATH: ${err.requestOptions.baseUrl}${err.requestOptions.path}";
       loggerText += "\nMETHOD: ${err.requestOptions.method}";

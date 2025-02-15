@@ -1,6 +1,7 @@
 import 'package:alice/alice.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
+import 'package:example/domain/interceptor/retry_certificate_pinning_interceptor.dart';
 import 'package:example/domain/interceptor/configurable_ssl_interceptor.dart';
 import 'package:example/domain/interceptor/downloadable_ssl_interceptor.dart';
 import 'package:example/firebase_options.dart';
@@ -14,7 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mobx/mobx.dart';
-import 'package:networx/flutter_feature_network.dart';
+import 'package:networx/networx.dart';
 
 import 'data/dto/model/feature_model.dart';
 
@@ -114,6 +115,11 @@ class _MainPageState extends State<MainPage> {
       key: 'FETCHED_POST_INCORRECT_FINGERPRINT',
     ),
     FeatureModel(
+      title: 'Retryable Incorrect Fingerprint',
+      desc: 'Retryable Incorrect Fingerprint',
+      key: 'RETRYABLE_INCORRECT_FINGERPRINT',
+    ),
+    FeatureModel(
       title: 'Fetched Post',
       desc: 'Fetched Post - Configurable Fingerprint',
       key: 'FETCHED_POST_CONFIGURABLE_FINGERPRINT',
@@ -188,6 +194,23 @@ class _MainPageState extends State<MainPage> {
         '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
       ],
     );
+    final placeHolderRetryableIncorrectFingerprintDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+        headers: {
+          // HttpHeaders.userAgentHeader: userAgent,
+        },
+      )),
+      prefixInterceptors: [
+        LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+      ],
+      customCertificatePinningInterceptor: RetryableCertificatePinningInterceptor(
+        allowedSHAFingerprints: [
+          '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
+        ],
+      ),
+    );
     final placeHolderConfigurableSslFingerprintDio = NetworxDio.getClient(
       dio: Dio(BaseOptions(
         baseUrl: 'https://jsonplaceholder.typicode.com/',
@@ -250,6 +273,7 @@ class _MainPageState extends State<MainPage> {
         placeHolderStandardDio: placeHolderStandardDio,
         placeHolderCorrectFingerprintDio: placeHolderCorrectFingerprintDio,
         placeHolderIncorrectFingerprintDio: placeHolderIncorrectFingerprintDio,
+        placeHolderRetryableIncorrectFingerprintDio: placeHolderRetryableIncorrectFingerprintDio,
         placeHolderConfigurableFingerprintDio: placeHolderConfigurableSslFingerprintDio,
         placeHolderCorrectCertByteDio: correctCertificateByteDio,
         placeHolderIncorrectCertByteDio: incorrectCertificateByteDio,
@@ -296,6 +320,9 @@ class _MainPageState extends State<MainPage> {
                         break;
                       case "FETCHED_POST_INCORRECT_FINGERPRINT":
                         mainStore.getPostByIdIncorrectFingerprint();
+                        break;
+                      case "RETRYABLE_INCORRECT_FINGERPRINT":
+                        mainStore.getPostByIdRetryableFingerprint();
                         break;
                       case "FETCHED_POST_CONFIGURABLE_FINGERPRINT":
                         mainStore.getPostByIdConfigurableFingerprint();

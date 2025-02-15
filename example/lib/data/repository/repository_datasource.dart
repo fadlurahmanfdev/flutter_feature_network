@@ -9,6 +9,8 @@ abstract class RepositoryDatasource {
 
   Future<PostResponse> getPostByIdIncorrectFingerprint({required int id});
 
+  Future<PostResponse> getPostByIdRetryableIncorrectFingerprint({required int id});
+
   Future<PostResponse> getPostByIdConfigurableFingerprint({required int id});
 
   Future<PostResponse> getPostByIdCorrectCertByte({required int id});
@@ -22,6 +24,7 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
   Dio placeHolderStandardDio;
   Dio placeHolderCorrectFingerprintDio;
   Dio placeHolderIncorrectFingerprintDio;
+  Dio placeHolderRetryableIncorrectFingerprintDio;
   Dio placeHolderConfigurableFingerprintDio;
   Dio placeHolderCorrectCertByteDio;
   Dio placeHolderIncorrectCertByteDio;
@@ -31,6 +34,7 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
     required this.placeHolderStandardDio,
     required this.placeHolderCorrectFingerprintDio,
     required this.placeHolderIncorrectFingerprintDio,
+    required this.placeHolderRetryableIncorrectFingerprintDio,
     required this.placeHolderConfigurableFingerprintDio,
     required this.placeHolderCorrectCertByteDio,
     required this.placeHolderIncorrectCertByteDio,
@@ -71,6 +75,21 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
   Future<PostResponse> getPostByIdIncorrectFingerprint({required int id}) async {
     try {
       final res = await placeHolderIncorrectFingerprintDio.get(
+        'posts/$id',
+      );
+      final dataMap = res.data as Map<String, dynamic>? ?? {};
+      return PostResponse.fromJson(dataMap);
+    } on DioException catch (e) {
+      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
+    } catch (e) {
+      throw FeatureException(title: 'Failed', desc: 'error: $e');
+    }
+  }
+
+  @override
+  Future<PostResponse> getPostByIdRetryableIncorrectFingerprint({required int id}) async {
+    try {
+      final res = await placeHolderRetryableIncorrectFingerprintDio.get(
         'posts/$id',
       );
       final dataMap = res.data as Map<String, dynamic>? ?? {};

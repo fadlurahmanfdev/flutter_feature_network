@@ -28,13 +28,13 @@ class NetworxCertificatePinningInterceptor extends InterceptorsWrapper {
 
     try {
       log("start process if connection secure", level: 300);
-      bool isHttpCertificateValid = await NetworxSecurity.isConnectionSecure(
+      bool isConnectionSecure = await NetworxSecurity.isConnectionSecure(
         serverUrl: baseUrl,
         sha: SHA.SHA256,
         allowedSHAFingerprints: allowedSHAFingerprints,
         timeout: timeout ?? 60,
       );
-      if (isHttpCertificateValid) {
+      if (isConnectionSecure) {
         log("connection secure", level: 300);
         handler.next(options);
         return;
