@@ -1,6 +1,6 @@
 name: networx
 description: "Network library perform API request through dio, add ons with SSL Checking"
-version: 1.0.0
+version: 0.0.1
 homepage: https://github.com/fadlurahmanfdev/flutter_feature_network
 
 environment:

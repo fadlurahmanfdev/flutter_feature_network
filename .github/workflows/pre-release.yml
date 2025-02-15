@@ -3,7 +3,7 @@ name: Pre Release (Check Tag & Dry Only Publish Pub Dev)
 on:
   push:
     tags:
-      - 'v*'
+      - 'v-networx-*'
 
 jobs:
   build:
