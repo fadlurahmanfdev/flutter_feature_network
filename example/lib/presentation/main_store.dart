@@ -33,6 +33,19 @@ abstract class MainStoreBase with Store {
   }
 
   @action
+  Future<void> getPostBurpSuiteById() async {
+    try {
+      fetchNetworkState = FetchNetworkLoadingState();
+      await repositoryDatasource.getPostForBurpSuite(id: 1);
+      fetchNetworkState = FetchNetworkSuccessState();
+    } on FeatureException catch (e) {
+      log("failed get post by id: ${e.title}");
+      log("failed get post by id: ${e.desc}");
+      fetchNetworkState = FetchNetworkFailedState(exception: e);
+    }
+  }
+
+  @action
   Future<void> getPostByIdCorrectFingerprint() async {
     try {
       fetchNetworkState = FetchNetworkLoadingState();

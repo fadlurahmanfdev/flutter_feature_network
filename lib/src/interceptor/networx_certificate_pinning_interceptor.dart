@@ -60,7 +60,7 @@ class NetworxCertificatePinningInterceptor extends InterceptorsWrapper {
       DioException(
         requestOptions: options,
         type: DioExceptionType.badCertificate,
-        error: ExceptionConstant.FINGERPRINT_CERTIFICATE_NOT_VALID.toJson(),
+        error: ExceptionConstant.CONNECTION_NOT_SECURE,
       ),
       true,
     );
@@ -72,7 +72,7 @@ class NetworxCertificatePinningInterceptor extends InterceptorsWrapper {
       DioException(
         requestOptions: options,
         type: DioExceptionType.badCertificate,
-        error: exception.toJson(),
+        error: exception,
       ),
       true,
     );
