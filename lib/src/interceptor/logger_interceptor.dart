@@ -18,6 +18,7 @@ class LoggerInterceptor extends InterceptorsWrapper {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (showLogRequest) {
       String loggerText = "API-REQUEST";
+      loggerText += "\nDATE TIME: ${DateTime.now()}";
       loggerText += "\nAPI PATH: ${options.baseUrl}${options.path}";
       loggerText += "\nMETHOD: ${options.method}";
       loggerText += "\nHEADER: ${options.headers}";
@@ -33,6 +34,7 @@ class LoggerInterceptor extends InterceptorsWrapper {
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if (showLogResponse) {
       String loggerText = "API-RESPONSE";
+      loggerText += "\nDATE TIME: ${DateTime.now()}";
       loggerText += "\nAPI PATH: ${response.requestOptions.baseUrl}${response.requestOptions.path}";
       loggerText += "\nMETHOD: ${response.requestOptions.method}";
       loggerText += "\nREQUEST";

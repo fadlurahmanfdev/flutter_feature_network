@@ -63,7 +63,7 @@ class RepositoryDatasourceImpl extends RepositoryDatasource {
   @override
   Future<PostResponse> getPostForBurpSuite({required int id}) async {
     try {
-      final res = await placeHolderStandardDio.get(
+      final res = await customProxyDioBurpSuite.get(
         'posts/$id',
       );
       final dataMap = res.data as Map<String, dynamic>? ?? {};

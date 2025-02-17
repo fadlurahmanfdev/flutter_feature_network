@@ -172,12 +172,18 @@ class _MainPageState extends State<MainPage> {
       ],
       suffixInterceptors: [],
     );
-    final customBurpSuiteProxyDio = Dio(BaseOptions(
-      baseUrl: 'https://jsonplaceholder.typicode.com/',
-    ));
+    final customBurpSuiteProxyDio = NetworxDio.getClient(
+      dio: Dio(BaseOptions(
+        baseUrl: 'https://jsonplaceholder.typicode.com/',
+      )),
+      prefixInterceptors: [
+        LoggerInterceptor(),
+        GetIt.I.get<Alice>().getDioInterceptor(),
+      ],
+    );
     customBurpSuiteProxyDio.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
       final client = HttpClient();
-      client.badCertificateCallback = (_, __, ___){
+      client.badCertificateCallback = (_, __, ___) {
         return true;
       };
       client.findProxy = (uri) {
