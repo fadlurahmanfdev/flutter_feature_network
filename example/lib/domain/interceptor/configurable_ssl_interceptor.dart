@@ -41,10 +41,6 @@ class ConfigurableSSLInterceptor extends InterceptorsWrapper {
             requestOptions: options,
             type: DioExceptionType.badCertificate,
             error: const HandshakeException('Connection is not secure'),
-            response: Response(
-              requestOptions: options,
-              statusCode: 495,
-            ),
           ),
         );
       }
@@ -54,18 +50,16 @@ class ConfigurableSSLInterceptor extends InterceptorsWrapper {
           requestOptions: options,
           type: DioExceptionType.badCertificate,
           error: e,
-          response: Response(
-            requestOptions: options,
-            statusCode: 495,
-          ),
         ),
       );
     } catch (e) {
-      handler.reject(DioException(
-        requestOptions: options,
-        type: DioExceptionType.unknown,
-        error: e,
-      ),);
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: e,
+        ),
+      );
     }
   }
 }

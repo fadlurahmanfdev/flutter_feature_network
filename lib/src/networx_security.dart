@@ -1,6 +1,6 @@
+
 import 'package:flutter/services.dart';
 import 'package:http_certificate_pinning/http_certificate_pinning.dart';
-import 'package:networx/src/constant/exception_constant.dart';
 import 'package:networx/src/exception/networx_exception.dart';
 
 class NetworxSecurity {
@@ -29,7 +29,11 @@ class NetworxSecurity {
       }
       return false;
     } on PlatformException catch (e) {
-      throw NetworxException(code: ExceptionConstant.BAD_FINGERPRINT.code, message: e.message);
+      if (e.code == 'CONNECTION_NOT_SECURE') {
+        return false;
+      } else {
+        throw NetworxException(code: e.code, message: e.message);
+      }
     }
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alice/alice.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
@@ -16,6 +18,7 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mobx/mobx.dart';
 import 'package:networx/networx.dart';
+import 'package:dio/io.dart';
 
 import 'data/dto/model/feature_model.dart';
 
@@ -105,6 +108,11 @@ class _MainPageState extends State<MainPage> {
       key: 'FETCHED_POST_OK',
     ),
     FeatureModel(
+      title: 'Dio Client for Burp Suite',
+      desc: 'Dio Client for Burp Suite',
+      key: 'DIO_CLIENT_FOR_BURP_SUITE',
+    ),
+    FeatureModel(
       title: 'Fetched Post',
       desc: 'Fetched Post - Correct Fingerprint',
       key: 'FETCHED_POST_CORRECT_FINGERPRINT',
@@ -164,6 +172,19 @@ class _MainPageState extends State<MainPage> {
       ],
       suffixInterceptors: [],
     );
+    final customBurpSuiteProxyDio = Dio(BaseOptions(
+      baseUrl: 'https://jsonplaceholder.typicode.com/',
+    ));
+    customBurpSuiteProxyDio.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
+      final client = HttpClient();
+      client.badCertificateCallback = (_, __, ___){
+        return true;
+      };
+      client.findProxy = (uri) {
+        return 'PROXY 192.168.1.16:8888';
+      };
+      return client;
+    });
     final placeHolderCorrectFingerprintDio = NetworxDio.getClient(
       dio: Dio(BaseOptions(
         baseUrl: 'https://jsonplaceholder.typicode.com/',
@@ -271,6 +292,7 @@ class _MainPageState extends State<MainPage> {
     mainStore = MainStore(
       repositoryDatasource: RepositoryDatasourceImpl(
         placeHolderStandardDio: placeHolderStandardDio,
+        customProxyDioBurpSuite: customBurpSuiteProxyDio,
         placeHolderCorrectFingerprintDio: placeHolderCorrectFingerprintDio,
         placeHolderIncorrectFingerprintDio: placeHolderIncorrectFingerprintDio,
         placeHolderRetryableIncorrectFingerprintDio: placeHolderRetryableIncorrectFingerprintDio,
@@ -314,6 +336,9 @@ class _MainPageState extends State<MainPage> {
                     switch (feature.key) {
                       case "FETCHED_POST_OK":
                         mainStore.getPostById();
+                        break;
+                      case "DIO_CLIENT_FOR_BURP_SUITE":
+                        mainStore.getPostBurpSuiteById();
                         break;
                       case "FETCHED_POST_CORRECT_FINGERPRINT":
                         mainStore.getPostByIdCorrectFingerprint();
