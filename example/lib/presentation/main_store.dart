@@ -52,7 +52,7 @@ abstract class MainStoreBase with Store {
       await repositoryDatasource.getPostByIdCorrectFingerprint(id: 1);
       fetchNetworkState = FetchNetworkSuccessState();
     } on FeatureException catch (e) {
-      print("masuk sini ${e.title} & ${e.desc}");
+      log("masuk sini ${e.title} & ${e.desc}");
       fetchNetworkState = FetchNetworkFailedState(exception: e);
     }
   }

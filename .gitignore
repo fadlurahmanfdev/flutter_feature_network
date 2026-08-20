@@ -28,7 +28,10 @@ migrate_working_dir/
 .dart_tool/
 build/
 
-.fvm
 *.g.dart
+!example/**/*.g.dart
 
 *.pem
+
+# FVM Version Cache
+.fvm/

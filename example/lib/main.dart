@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:alice/alice.dart';
+import 'package:alice_dio/alice_dio_adapter.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
 import 'package:example/domain/interceptor/retry_certificate_pinning_interceptor.dart';
 import 'package:example/domain/interceptor/configurable_ssl_interceptor.dart';
 import 'package:example/domain/interceptor/downloadable_ssl_interceptor.dart';
-import 'package:example/firebase_options.dart';
 import 'package:example/presentation/main_store.dart';
 import 'package:example/presentation/widget/feature_widget.dart';
 import 'package:example/presentation/widget/info_bottomsheet.dart';
@@ -24,9 +24,11 @@ import 'data/dto/model/feature_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('Firebase initialization skipped: $e');
+  }
   runApp(const MyApp());
 }
 
@@ -39,7 +41,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Alice alice;
-  late FirebaseRemoteConfig remoteConfig;
+  FirebaseRemoteConfig? remoteConfig;
   bool isAllFullySetup = false;
   late Dio placeHolderStandardDio;
   late Dio sslDio;
@@ -50,16 +52,18 @@ class _MyAppState extends State<MyApp> {
     NetworxDio networkRepository = NetworxDio();
     GetIt.I.registerFactory<NetworxDio>(() => networkRepository);
     // GetIt.I.registerFactory<FeaturePlatformRepository>(() => FeaturePlatformRepositoryImpl());
-    alice = Alice(showNotification: true, showInspectorOnShake: true);
+    alice = Alice();
     GetIt.I.registerSingleton(alice);
-    remoteConfig = FirebaseRemoteConfig.instance;
-    remoteConfig.setConfigSettings(RemoteConfigSettings(
-      fetchTimeout: const Duration(seconds: 60),
-      minimumFetchInterval: const Duration(seconds: 10),
-    ));
-    GetIt.I.registerSingleton(remoteConfig);
-    GetIt.I.get<FirebaseRemoteConfig>().fetchAndActivate();
-    GetIt.I.get<FirebaseRemoteConfig>().ensureInitialized();
+    if (Firebase.apps.isNotEmpty) {
+      remoteConfig = FirebaseRemoteConfig.instance;
+      remoteConfig!.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 60),
+        minimumFetchInterval: const Duration(seconds: 10),
+      ));
+      GetIt.I.registerSingleton(remoteConfig!);
+      GetIt.I.get<FirebaseRemoteConfig>().fetchAndActivate();
+      GetIt.I.get<FirebaseRemoteConfig>().ensureInitialized();
+    }
 
     Future.delayed(const Duration(seconds: 3), () {
       setState(() {
@@ -160,6 +164,21 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  AliceDioAdapter _aliceDioAdapter() {
+    final adapter = AliceDioAdapter();
+    GetIt.I.get<Alice>().addAdapter(adapter);
+    return adapter;
+  }
+
+  Future<List<int>?> _loadCertificateBytes(String assetPath) async {
+    try {
+      return await NetworxUtils.getCertificateBytesFromAsset(assetPath: assetPath);
+    } catch (e) {
+      debugPrint('Certificate asset missing: $assetPath ($e)');
+      return null;
+    }
+  }
+
   Future<void> init() async {
     // final userAgent = await GetIt.I.get<FeaturePlatformRepository>().getUserAgent();
     final placeHolderStandardDio = NetworxDio.getClient(
@@ -168,7 +187,7 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
+        _aliceDioAdapter(),
       ],
       suffixInterceptors: [],
     );
@@ -178,12 +197,12 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
+        _aliceDioAdapter(),
       ],
     );
     customBurpSuiteProxyDio.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
       final client = HttpClient();
-      client.badCertificateCallback = (_, __, ___) {
+      client.badCertificateCallback = (_, _, _) {
         return true;
       };
       client.findProxy = (uri) {
@@ -200,7 +219,7 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
+        _aliceDioAdapter(),
       ],
       allowedFingerprints: [
         'c19017fc3b6d30f06dae6f7049f296560212b6ac826fe0e3ca24dd1b4912e92b',
@@ -215,7 +234,7 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
+        _aliceDioAdapter(),
       ],
       allowedFingerprints: [
         '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
@@ -230,7 +249,7 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
+        _aliceDioAdapter(),
       ],
       customCertificatePinningInterceptor: RetryableCertificatePinningInterceptor(
         allowedSHAFingerprints: [
@@ -247,13 +266,13 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
-        ConfigurableSSLInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
+        _aliceDioAdapter(),
+        if (GetIt.I.isRegistered<FirebaseRemoteConfig>())
+          ConfigurableSSLInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
       ],
     );
-    final jsonPlaceholderCertByte =
-        await NetworxUtils.getCertificateBytesFromAsset(assetPath: 'assets/jsonplaceholder_cert.pem');
-    final wikipediaCertByte = await NetworxUtils.getCertificateBytesFromAsset(assetPath: 'assets/wikipedia_cert.pem');
+    final jsonPlaceholderCertByte = await _loadCertificateBytes('assets/jsonplaceholder_cert.pem');
+    final wikipediaCertByte = await _loadCertificateBytes('assets/wikipedia_cert.pem');
     final correctCertificateByteDio = NetworxDio.getClient(
       dio: Dio(BaseOptions(
         baseUrl: 'https://jsonplaceholder.typicode.com/',
@@ -263,7 +282,7 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
+        _aliceDioAdapter(),
       ],
       trustedCertificateBytes: jsonPlaceholderCertByte,
     );
@@ -276,7 +295,7 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
+        _aliceDioAdapter(),
       ],
       trustedCertificateBytes: wikipediaCertByte,
     );
@@ -290,8 +309,9 @@ class _MainPageState extends State<MainPage> {
       )),
       prefixInterceptors: [
         LoggerInterceptor(),
-        GetIt.I.get<Alice>().getDioInterceptor(),
-        DownloadableSSLInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
+        _aliceDioAdapter(),
+        if (GetIt.I.isRegistered<FirebaseRemoteConfig>())
+          DownloadableSSLInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
       ],
       trustedCertificateBytes: wikipediaCertByte,
     );

@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.6 <4.0.0'
+  sdk: ^3.11.4
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -34,30 +34,25 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.8
 
   networx:
     path: ../
 
-  alice:
-    git:
-      url: https://github.com/fadlurahmanfdev/alice.git
-      ref: v0.4.0.2
+  alice: ^1.0.0
+  alice_dio: ^1.0.7
+  dio: ^5.11.0
+  http_certificate_pinning: ^3.0.2
 
-  #  flutter_feature_platform:
-#    git:
-#      url: https://github.com/fadlurahmanfdev/flutter_feature_platform.git
-#      ref: v0.0.2-beta
-
-  equatable: ^2.0.5
-  firebase_core: ^2.24.2
-  firebase_remote_config: ^4.3.8
-  flutter_mobx: ^2.2.1+1
-  freezed_annotation: ^2.4.1
+  equatable: ^2.0.7
+  firebase_core: ^4.13.0
+  firebase_remote_config: ^6.5.6
+  flutter_mobx: ^2.3.0
   get_it: ^8.0.2
-  mobx: ^2.3.3+2
-  path_provider: ^2.1.2
-  uuid: ^4.2.2
+  json_annotation: ^4.9.0
+  mobx: ^2.5.0
+  path_provider: ^2.1.5
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
@@ -68,11 +63,10 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  build_runner: ^2.4.9
-  flutter_lints: ^2.0.0
-  freezed: ^2.5.2
-  json_serializable: ^6.8.0
-  mobx_codegen: ^2.7.0
+  build_runner: ^2.4.15
+  flutter_lints: ^6.0.0
+  json_serializable: ^6.9.5
+  mobx_codegen: ^2.7.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -81,8 +75,8 @@ dev_dependencies:
 flutter:
 
   # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
+  # included with your application, so that you can use the icons in the
+  # material Icons class.
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
@@ -90,10 +84,10 @@ flutter:
     - assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware
+  # https://flutter.dev/to/resolution-aware-images
 
   # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
+  # https://flutter.dev/to/asset-from-package
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
@@ -113,4 +107,4 @@ flutter:
   #         weight: 700
   #
   # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages
+  # see https://flutter.dev/to/font-from-package
