@@ -1,5 +1,5 @@
 name: networx
-description: "Network library perform API request through dio, add ons with SSL Checking"
+description: "Network library perform API request through dio, add ons with Certificate Pinning"
 version: 0.0.2
 homepage: https://github.com/fadlurahmanfdev/flutter_feature_network
 
@@ -11,9 +11,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+  asn1lib: ^1.6.5
+  crypto: ^3.0.7
   dio: ^5.11.0
-  http_certificate_pinning: ^3.0.2
   logger: ^2.7.0
+  x509: ^0.2.4+3
 
 dev_dependencies:
   flutter_test:

@@ -1,18 +1,15 @@
+import 'dart:typed_data';
+
 import 'dart:io';
 
 import 'package:alice/alice.dart';
 import 'package:alice_dio/alice_dio_adapter.dart';
 import 'package:example/data/repository/repository_datasource.dart';
 import 'package:example/data/state/fetch_network_state.dart';
-import 'package:example/domain/interceptor/retry_certificate_pinning_interceptor.dart';
-import 'package:example/domain/interceptor/configurable_ssl_interceptor.dart';
-import 'package:example/domain/interceptor/downloadable_ssl_interceptor.dart';
 import 'package:example/presentation/main_store.dart';
 import 'package:example/presentation/widget/feature_widget.dart';
 import 'package:example/presentation/widget/info_bottomsheet.dart';
 import 'package:example/presentation/widget/loading_dialog.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
@@ -24,11 +21,6 @@ import 'data/dto/model/feature_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint('Firebase initialization skipped: $e');
-  }
   runApp(const MyApp());
 }
 
@@ -41,7 +33,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Alice alice;
-  FirebaseRemoteConfig? remoteConfig;
   bool isAllFullySetup = false;
   late Dio placeHolderStandardDio;
   late Dio sslDio;
@@ -54,17 +45,6 @@ class _MyAppState extends State<MyApp> {
     // GetIt.I.registerFactory<FeaturePlatformRepository>(() => FeaturePlatformRepositoryImpl());
     alice = Alice();
     GetIt.I.registerSingleton(alice);
-    if (Firebase.apps.isNotEmpty) {
-      remoteConfig = FirebaseRemoteConfig.instance;
-      remoteConfig!.setConfigSettings(RemoteConfigSettings(
-        fetchTimeout: const Duration(seconds: 60),
-        minimumFetchInterval: const Duration(seconds: 10),
-      ));
-      GetIt.I.registerSingleton(remoteConfig!);
-      GetIt.I.get<FirebaseRemoteConfig>().fetchAndActivate();
-      GetIt.I.get<FirebaseRemoteConfig>().ensureInitialized();
-    }
-
     Future.delayed(const Duration(seconds: 3), () {
       setState(() {
         isAllFullySetup = true;
@@ -123,6 +103,11 @@ class _MainPageState extends State<MainPage> {
     ),
     FeatureModel(
       title: 'Fetched Post',
+      desc: 'Fetched Post - Correct Subject Public Key Pinning Info (SPKI)',
+      key: 'FETCHED_POST_CORRECT_SPKI',
+    ),
+    FeatureModel(
+      title: 'Fetched Post',
       desc: 'Fetched Post - Incorrect Fingerprint',
       key: 'FETCHED_POST_INCORRECT_FINGERPRINT',
     ),
@@ -157,11 +142,9 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        init();
-      },
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      init();
+    });
   }
 
   AliceDioAdapter _aliceDioAdapter() {
@@ -172,7 +155,9 @@ class _MainPageState extends State<MainPage> {
 
   Future<List<int>?> _loadCertificateBytes(String assetPath) async {
     try {
-      return await NetworxUtils.getCertificateBytesFromAsset(assetPath: assetPath);
+      return await NetworxUtils.getCertificateBytesFromAsset(
+        assetPath: assetPath,
+      );
     } catch (e) {
       debugPrint('Certificate asset missing: $assetPath ($e)');
       return null;
@@ -181,148 +166,147 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> init() async {
     // final userAgent = await GetIt.I.get<FeaturePlatformRepository>().getUserAgent();
-    final placeHolderStandardDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
-        baseUrl: 'https://jsonplaceholder.typicode.com/',
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-      ],
-      suffixInterceptors: [],
-    );
+    final placeHolderStandardDio = Dio(
+      BaseOptions(baseUrl: 'https://jsonplaceholder.typicode.com/'),
+    )..interceptors.addAll([LoggerInterceptor(), _aliceDioAdapter()]);
+
     final customBurpSuiteProxyDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
-        baseUrl: 'https://jsonplaceholder.typicode.com/',
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-      ],
+      dio: Dio(BaseOptions(baseUrl: 'https://jsonplaceholder.typicode.com/')),
+      prefixInterceptors: [LoggerInterceptor(), _aliceDioAdapter()],
     );
-    customBurpSuiteProxyDio.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
-      final client = HttpClient();
-      client.badCertificateCallback = (_, _, _) {
-        return true;
-      };
-      client.findProxy = (uri) {
-        return 'PROXY 192.168.1.16:8888';
-      };
-      return client;
-    });
-    final placeHolderCorrectFingerprintDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
+    customBurpSuiteProxyDio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.badCertificateCallback = (_, _, _) {
+          return true;
+        };
+        client.findProxy = (uri) {
+          return 'PROXY 192.168.1.16:8888';
+        };
+        return client;
+      },
+    );
+
+    // final placeHolderCorrectFingerprintDio = NetworxDio.getClient(
+    //   dio: Dio(BaseOptions(
+    //     baseUrl: 'https://jsonplaceholder.typicode.com/',
+    //     headers: {
+    //       // HttpHeaders.userAgentHeader: userAgent,
+    //     },
+    //   )),
+    //   prefixInterceptors: [
+    //
+    //   ],
+    //   allowedFingerprints: [
+    //     'c19017fc3b6d30f06dae6f7049f296560212b6ac826fe0e3ca24dd1b4912e92b',
+    //   ],
+    // );
+
+    final placeHolderCorrectFingerprintDio = Dio(
+      BaseOptions(
         baseUrl: 'https://jsonplaceholder.typicode.com/',
         headers: {
           // HttpHeaders.userAgentHeader: userAgent,
         },
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-      ],
-      allowedFingerprints: [
-        'c19017fc3b6d30f06dae6f7049f296560212b6ac826fe0e3ca24dd1b4912e92b',
-      ],
+      ),
+    )..interceptors.addAll([LoggerInterceptor(), _aliceDioAdapter()]);
+
+    placeHolderCorrectFingerprintDio.httpClientAdapter = NetworxPinningClientAdapter(
+      pinningHash: [
+        'fj/LGYZh+mUuNimcCT6b6V6MLFW1SIzcsM4hgwSwVB4='
+      ]
     );
+
     final placeHolderIncorrectFingerprintDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
-        baseUrl: 'https://jsonplaceholder.typicode.com/',
-        headers: {
-          // HttpHeaders.userAgentHeader: userAgent,
-        },
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-      ],
+      dio: Dio(
+        BaseOptions(
+          baseUrl: 'https://jsonplaceholder.typicode.com/',
+          headers: {
+            // HttpHeaders.userAgentHeader: userAgent,
+          },
+        ),
+      ),
+      prefixInterceptors: [LoggerInterceptor(), _aliceDioAdapter()],
       allowedFingerprints: [
         '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
       ],
     );
     final placeHolderRetryableIncorrectFingerprintDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
-        baseUrl: 'https://jsonplaceholder.typicode.com/',
-        headers: {
-          // HttpHeaders.userAgentHeader: userAgent,
-        },
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-      ],
-      customCertificatePinningInterceptor: RetryableCertificatePinningInterceptor(
-        allowedSHAFingerprints: [
-          '065e3b66390a5d3c7ce51f27342442606453b3d98e4d4e97f5b708b59d190a0a',
-        ],
+      dio: Dio(
+        BaseOptions(
+          baseUrl: 'https://jsonplaceholder.typicode.com/',
+          headers: {
+            // HttpHeaders.userAgentHeader: userAgent,
+          },
+        ),
       ),
+      prefixInterceptors: [LoggerInterceptor(), _aliceDioAdapter()],
     );
     final placeHolderConfigurableSslFingerprintDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
-        baseUrl: 'https://jsonplaceholder.typicode.com/',
-        headers: {
-          // HttpHeaders.userAgentHeader: userAgent,
-        },
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-        if (GetIt.I.isRegistered<FirebaseRemoteConfig>())
-          ConfigurableSSLInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
-      ],
+      dio: Dio(
+        BaseOptions(
+          baseUrl: 'https://jsonplaceholder.typicode.com/',
+          headers: {
+            // HttpHeaders.userAgentHeader: userAgent,
+          },
+        ),
+      ),
+      prefixInterceptors: [LoggerInterceptor(), _aliceDioAdapter()],
     );
-    final jsonPlaceholderCertByte = await _loadCertificateBytes('assets/jsonplaceholder_cert.pem');
-    final wikipediaCertByte = await _loadCertificateBytes('assets/wikipedia_cert.pem');
+    final jsonPlaceholderCertByte = await _loadCertificateBytes(
+      'assets/jsonplaceholder_cert.pem',
+    );
+    final wikipediaCertByte = await _loadCertificateBytes(
+      'assets/wikipedia_cert.pem',
+    );
     final correctCertificateByteDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
-        baseUrl: 'https://jsonplaceholder.typicode.com/',
-        headers: {
-          // HttpHeaders.userAgentHeader: userAgent,
-        },
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-      ],
+      dio: Dio(
+        BaseOptions(
+          baseUrl: 'https://jsonplaceholder.typicode.com/',
+          headers: {
+            // HttpHeaders.userAgentHeader: userAgent,
+          },
+        ),
+      ),
+      prefixInterceptors: [LoggerInterceptor(), _aliceDioAdapter()],
       trustedCertificateBytes: jsonPlaceholderCertByte,
     );
     final incorrectCertificateByteDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
-        baseUrl: 'https://jsonplaceholder.typicode.com/',
-        headers: {
-          // HttpHeaders.userAgentHeader: userAgent,
-        },
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-      ],
+      dio: Dio(
+        BaseOptions(
+          baseUrl: 'https://jsonplaceholder.typicode.com/',
+          headers: {
+            // HttpHeaders.userAgentHeader: userAgent,
+          },
+        ),
+      ),
+      prefixInterceptors: [LoggerInterceptor(), _aliceDioAdapter()],
       trustedCertificateBytes: wikipediaCertByte,
     );
 
     final downloadableSSLCertificateByteDio = NetworxDio.getClient(
-      dio: Dio(BaseOptions(
-        baseUrl: 'https://jsonplaceholder.typicode.com/',
-        headers: {
-          // HttpHeaders.userAgentHeader: userAgent,
-        },
-      )),
-      prefixInterceptors: [
-        LoggerInterceptor(),
-        _aliceDioAdapter(),
-        if (GetIt.I.isRegistered<FirebaseRemoteConfig>())
-          DownloadableSSLInterceptor(remoteConfig: GetIt.I.get<FirebaseRemoteConfig>()),
-      ],
+      dio: Dio(
+        BaseOptions(
+          baseUrl: 'https://jsonplaceholder.typicode.com/',
+          headers: {
+            // HttpHeaders.userAgentHeader: userAgent,
+          },
+        ),
+      ),
+      prefixInterceptors: [LoggerInterceptor(), _aliceDioAdapter()],
       trustedCertificateBytes: wikipediaCertByte,
     );
+
     mainStore = MainStore(
       repositoryDatasource: RepositoryDatasourceImpl(
         placeHolderStandardDio: placeHolderStandardDio,
         customProxyDioBurpSuite: customBurpSuiteProxyDio,
         placeHolderCorrectFingerprintDio: placeHolderCorrectFingerprintDio,
         placeHolderIncorrectFingerprintDio: placeHolderIncorrectFingerprintDio,
-        placeHolderRetryableIncorrectFingerprintDio: placeHolderRetryableIncorrectFingerprintDio,
-        placeHolderConfigurableFingerprintDio: placeHolderConfigurableSslFingerprintDio,
+        placeHolderRetryableIncorrectFingerprintDio:
+            placeHolderRetryableIncorrectFingerprintDio,
+        placeHolderConfigurableFingerprintDio:
+            placeHolderConfigurableSslFingerprintDio,
         placeHolderCorrectCertByteDio: correctCertificateByteDio,
         placeHolderIncorrectCertByteDio: incorrectCertificateByteDio,
         placeHolderDownloadableCertByteDio: downloadableSSLCertificateByteDio,
@@ -339,7 +323,7 @@ class _MainPageState extends State<MainPage> {
           Navigator.pop(context);
           showInfo(title: p0.exception.title, desc: p0.exception.desc);
         }
-      })
+      }),
     ];
 
     setState(() {
@@ -393,9 +377,7 @@ class _MainPageState extends State<MainPage> {
                 );
               },
             )
-          : const Center(
-              child: CircularProgressIndicator(),
-            ),
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
@@ -410,7 +392,9 @@ class _MainPageState extends State<MainPage> {
 
   void showInfo({required String title, required String desc}) {
     showModalBottomSheet(
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       context: context,
       builder: (_) {
         return InfoBottomsheet(title: title, desc: desc);

@@ -28,10 +28,8 @@ class NetworxDio {
     List<int>? trustedCertificateBytes,
     NetworxHandshakeSSLInterceptor? customHandshakeSSLInterceptor,
     List<String>? allowedFingerprints,
-    NetworxCertificatePinningInterceptor? customCertificatePinningInterceptor,
   }) {
     assert(trustedCertificateBytes == null || allowedFingerprints == null);
-    assert(allowedFingerprints == null || customCertificatePinningInterceptor == null);
 
     if (prefixInterceptors != null) {
       dio.interceptors.addAll(prefixInterceptors);
@@ -47,11 +45,11 @@ class NetworxDio {
       dio.interceptors.add(NetworxHandshakeSSLInterceptor());
     }
 
-    if (customCertificatePinningInterceptor != null) {
-      dio.interceptors.add(customCertificatePinningInterceptor);
-    } else if (allowedFingerprints != null) {
-      dio.interceptors.add(NetworxCertificatePinningInterceptor(allowedSHAFingerprints: allowedFingerprints));
-    }
+    // if (customCertificatePinningInterceptor != null) {
+    //   dio.interceptors.add(customCertificatePinningInterceptor);
+    // } else if (allowedFingerprints != null) {
+    //   dio.interceptors.add(NetworxCertificatePinningInterceptor(allowedSHAFingerprints: allowedFingerprints));
+    // }
 
     if (suffixInterceptors != null) {
       dio.interceptors.addAll(suffixInterceptors);
