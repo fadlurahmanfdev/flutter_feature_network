@@ -1,12 +1,31 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:asn1lib/asn1lib.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 
+/// Helpers that turn certificates into pins your app can store and reuse.
+///
+/// Use these when you need a PEM from assets, a certificate hash, or a
+/// public-key (SPKI) pin — then pass the result to
+/// [NetworxPinningClientAdapter].
 class NetworxPinningUtils {
+  /// Loads a PEM certificate from a Flutter asset.
+  ///
+  /// Keep the PEM in your app bundle when you want a known certificate
+  /// available offline. The returned bytes can be passed to
+  /// [NetworxPinningClientAdapter.certificateBytes].
+  ///
+  /// [assetPath] is the asset path declared in `pubspec.yaml`, for example
+  /// `assets/api_cert.pem`.
+  ///
+  /// Example:
+  /// ```dart
+  /// final pem = await NetworxPinningUtils.getCertificateBytesFromAsset(
+  ///   assetPath: 'assets/api_cert.pem',
+  /// );
+  /// ```
   static Future<Uint8List> getCertificateBytesFromAsset({
     required String assetPath,
   }) async {
@@ -15,98 +34,62 @@ class NetworxPinningUtils {
     });
   }
 
-  static String getHash(X509Certificate certificate){
+  /// Creates a SHA-256 hash of the full certificate.
+  ///
+  /// Use this when you want the pin to match one exact certificate. If the
+  /// server renews the cert, this hash will change and the pin must be
+  /// updated.
+  ///
+  /// [certificate] is the live X.509 certificate from the TLS handshake.
+  ///
+  /// Returns a lowercase hex SHA-256 string.
+  ///
+  /// Example:
+  /// ```dart
+  /// final hash = NetworxPinningUtils.getHash(certificate);
+  /// ```
+  static String getHash(X509Certificate certificate) {
     final derBytes = certificate.der;
     return sha256.convert(derBytes).toString().toLowerCase();
   }
 
-  /// Extracts the SHA-256 SPKI pin from an X.509 certificate.
+  /// Creates a public-key (SPKI) pin from a certificate.
   ///
-  /// Result format:
-  ///   Base64(SHA-256(DER-encoded SubjectPublicKeyInfo))
+  /// Prefer this when certificates rotate often but the same key is reused.
+  /// The pin stays valid across renewals until the server changes its key.
+  ///
+  /// [certificate] is the live X.509 certificate from the TLS handshake.
+  ///
+  /// Returns `Base64(SHA-256(DER-encoded SubjectPublicKeyInfo))`, the same
+  /// format OpenSSL produces for SPKI pins.
   ///
   /// Example:
-  ///   fj/LGYZh+mUuNimcCT6b6V6MLFW1SIzcsM4hgwSwVB4=
+  /// ```dart
+  /// final spki = NetworxPinningUtils.getSpkiPin(certificate);
+  /// // fj/LGYZh+mUuNimcCT6b6V6MLFW1SIzcsM4hgwSwVB4=
+  /// ```
   static String getSpkiPin(X509Certificate certificate) {
-    // The certificate DER is the original binary X.509 certificate
-    // received from the TLS connection.
     final parser = ASN1Parser(certificate.der);
 
-    // X.509 Certificate structure:
-    //
-    // Certificate
-    // ├── tbsCertificate       <-- we need this
-    // ├── signatureAlgorithm
-    // └── signatureValue
-    //
-    final certificateSequence =
-    parser.nextObject() as ASN1Sequence;
-
-    final tbsCertificate =
-    certificateSequence.elements[0] as ASN1Sequence;
+    // Certificate → tbsCertificate, signatureAlgorithm, signatureValue.
+    final certificateSequence = parser.nextObject() as ASN1Sequence;
+    final tbsCertificate = certificateSequence.elements[0] as ASN1Sequence;
 
     var index = 0;
 
-    // TBSCertificate optionally starts with:
-    //
-    // [0] EXPLICIT Version
-    //
-    // If version exists, skip it.
+    // Optional [0] EXPLICIT Version.
     if (tbsCertificate.elements[0].tag == 0xA0) {
       index++;
     }
 
-    // Skip serialNumber.
-    index++;
+    // serialNumber, signature, issuer, validity, subject.
+    index += 5;
 
-    // Skip signature algorithm.
-    index++;
-
-    // Skip issuer.
-    index++;
-
-    // Skip validity.
-    index++;
-
-    // Skip subject.
-    index++;
-
-    // The next field is SubjectPublicKeyInfo (SPKI).
-    //
-    // This is the important part:
-    //
-    // TBSCertificate
-    // ├── version
-    // ├── serialNumber
-    // ├── signature
-    // ├── issuer
-    // ├── validity
-    // ├── subject
-    // └── SubjectPublicKeyInfo  <-- WE WANT THIS
-    //
+    // Next field is SubjectPublicKeyInfo (SPKI). Hash the original DER
+    // bytes — not the full certificate and not a rebuilt public key.
     final spki = tbsCertificate.elements[index];
-
-    // IMPORTANT:
-    // Use the ORIGINAL DER-encoded SPKI bytes.
-    //
-    // Do NOT hash:
-    //   - the entire certificate
-    //   - only the public-key BIT STRING
-    //   - the RSA modulus
-    //   - a reconstructed public-key object
-    //
-    // OpenSSL's:
-    //
-    //   openssl x509 -pubkey
-    //   | openssl pkey -pubin -outform DER
-    //
-    // produces this exact DER-encoded SPKI structure.
     final spkiDer = Uint8List.fromList(spki.encodedBytes);
-
-    // SPKI pinning = SHA-256 of the DER-encoded SPKI.
     final digest = sha256.convert(spkiDer);
-
-    // OpenSSL outputs the SHA-256 digest as Base64.
     return base64Encode(digest.bytes);
   }
 }

@@ -1,93 +1,117 @@
-# Overview
+# Networx
 
-Networking library to support API Request by dio package & simplified SSL Security operation.
+Networx is a extended add-on for Dio, current main capabilities is to validate SPKI (Subject Public Key Pinning Info) & Certificate from Server.
 
-# Table Of Content
-* [Key Feature](#key-feature) 
-* [Get Started](#get-started)
-* [Import](#import)
-* [Generate Dio Client](#generate-dio-client)
-* [Check Whether Connection Secure](#check-whether-connection-secure) 
-* [Get Pem Certificate](#get-pem-certificate-bytes-from-asset) 
-* [Example](#example)
+## Install
 
-## Key Feature
-
-- Get Dio client with custom configurable SSL security
-- HTTP Certificate Pinning Check
-- Pem File Certificate Check
-
-## Get Started
-
-### Import
+Add the package to your app, then import it:
 
 ```dart
 import 'package:networx/networx.dart';
 ```
 
-## Feature
+## Pin with a certificate hash
 
-### Generate Dio Client
-
-Generate Dio Client For API Request.
+Use this when you want the connection to match **one exact certificate**. If the server issues a new cert, update the hash.
 
 ```dart
-final rawDio = NetworxDio.getClient(
-  dio: Dio(BaseOptions(
-    baseUrl: 'https://jsonplaceholder.typicode.com/',
-    headers: {
-      // HttpHeaders.userAgentHeader: userAgent,
-    },
-  )),
-);
-```
-
-| Parameter Name                        | Type                                 | Required  | Description                                                                                                                                                   |
-|---------------------------------------|--------------------------------------|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `dio`                                 | Dio                                  | yes       | The Dio client. The client can configure on their own for dio base option, `networx` just config for SSL Security.                                            |
-| `prefixInterceptors`                  | List<Interceptor>                    | no        | The interceptors added in the first section before the other interceptor.                                                                                     |
-| `suffixInterceptors`                  | List<Interceptor>                    | no        | The interceptors added in the last section after all the other interceptor.                                                                                   |
-| `trustedCertificateBytes`             | List<int>                            | no        | The pem certificate for ssl checking in bytes type. <br> Only one of `trustedCertificateBytes` or `allowedFingerprints` allowed. </br>                        |
-| `customHandshakeSSLInterceptor`       | NetworxHandshakeSSLInterceptor       | no        | Custom interceptor for pem certificate checking. <br> Only one of `trustedCertificateBytes` or `customHandshakeSSLInterceptor` allowed. </br>                 |
-| `allowedFingerprints`                 | List<String>                         | no        | A list of allowed SSL certificate SHA fingerprints for secure connections. <br> Only one of `trustedCertificateBytes` or `allowedFingerprints` allowed. </br> |
-| `customCertificatePinningInterceptor` | NetworxCertificatePinningInterceptor | no        | Custom interceptor for check http certificate pinning. <br> Only one of `allowedFingerprints` or `customCertificatePinningInterceptor` allowed. </br>         |
-
-### Check Whether Connection Secure
-
-This is will checked if the connection using certificate is secure.
-
-if connection is secure, it will return true, otherwise it will return false.
-
-```dart
-final isSecure = NetworxSecurity.isConnectionSecure(
-  serverUrl: 'https://jsonplaceholder.typicode.com/',
-  sha: SHA.SHA_256,
-  allowedSHAFingerprints: [
-    '14f9996f9481eac7f9c005f6954c2f032d8e9cb13d4440ebed35f14bed22c43f',
+final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
+dio.httpClientAdapter = NetworxPinningClientAdapter(
+  pinningHash: [
+    '5c5106f35c5fd16f524258c4635db8b55ba89bf262ccca72e1dc0b7be5580231',
   ],
 );
+
+final response = await dio.get('/profile');
 ```
 
-| Parameter Name        | Type         | Required | Description                                                                 |
-|-----------------------|--------------|----------|-----------------------------------------------------------------------------|
-| `serverUrl`           | String       | true     | The URL of the server to check the connection against.                      |
-| `sha`                 | SHA          | true     | The hashing algorithm used (e.g., SHA_256) for the certificate fingerprint. |
-| `allowedFingerprints` | List<String> | true     | A list of allowed SHA fingerprints for SSL certificates.                    |
-| `timeout`             | int          | yes      | how long it take to stop process.                                           |
+## Pin with a public-key (SPKI) hash
 
-### Get PEM Certificate Bytes from Asset
-
-This is will checked if the connection using certificate is secure.
+Use this when certificates rotate, but the same key is reused. The pin stays valid until the server changes its key.
 
 ```dart
-final certificateBytes = NetworxUtils.getCertificateBytesFromAsset(assethPath: 'asset/certificate.pem');
+final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
+dio.httpClientAdapter = NetworxPinningClientAdapter(
+  pinningHash: [
+    'fj/LGYZh+mUuNimcCT6b6V6MLFW1SIzcsM4hgwSwVB4=',
+  ],
+);
+
+final response = await dio.get('/profile');
 ```
 
-| Parameter Name | Type   | Required | Description                 |
-|----------------|--------|----------|-----------------------------|
-| `assethPath`   | String | true     | The location of asset path. |
+The adapter accepts both formats in the same list. A request is allowed when **either** the certificate hash or the SPKI pin matches.
 
-# Example
+## Trust a PEM file
 
-For detail example, check the example app [example](https://github.com/fadlurahmanfdev/flutter_feature_network/blob/dev-split-networking/example/lib/main.dart)
+Use this when you already have the server certificate and want the app to trust that file only — not the full public CA list.
 
+```dart
+final pem = await NetworxPinningUtils.getCertificateBytesFromAsset(
+  assetPath: 'assets/api_cert.pem',
+);
+
+final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
+dio.httpClientAdapter = NetworxPinningClientAdapter(
+  certificateBytes: pem,
+);
+
+final response = await dio.get('/profile');
+```
+
+Declare the PEM in `pubspec.yaml`:
+
+```yaml
+flutter:
+  assets:
+    - assets/api_cert.pem
+```
+
+## Read hashes from a live certificate
+
+When you have an `X509Certificate` from a TLS handshake, turn it into pins you can store and reuse.
+
+```dart
+final certHash = NetworxPinningUtils.getHash(certificate);
+final spkiPin = NetworxPinningUtils.getSpkiPin(certificate);
+```
+
+- `getHash` is the SHA-256 of the full certificate. Best when the cert itself must not change.
+- `getSpkiPin` is the public-key pin. Best when you expect the cert to renew with the same key.
+
+## Log API traffic
+
+Use this in development to see what left the device and what came back. Turn flags off before you ship if logs should not include payloads.
+
+```dart
+final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
+dio.interceptors.add(
+  LoggerInterceptor(
+    showLogRequest: true,
+    showLogResponse: true,
+    showLogError: true,
+  ),
+);
+```
+
+## Put it together
+
+A typical production client pins the public key and keeps logs for debug builds only:
+
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:networx/networx.dart';
+
+final dio = Dio(BaseOptions(baseUrl: 'https://api.example.com'));
+dio.httpClientAdapter = NetworxPinningClientAdapter(
+  pinningHash: ['fj/LGYZh+mUuNimcCT6b6V6MLFW1SIzcsM4hgwSwVB4='],
+);
+
+if (kDebugMode) {
+  dio.interceptors.add(LoggerInterceptor());
+}
+```
+
+## Try the sample app
+
+The example app walks through each flow: a normal request, a matching pin, a wrong pin, a matching PEM, and a wrong PEM. Open [example/lib/main.dart](https://github.com/fadlurahmanfdev/flutter_feature_network/blob/dev-split-networking/example/lib/main.dart) and run it to see what the user would see when a request is allowed or blocked.
