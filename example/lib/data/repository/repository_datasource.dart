@@ -1,182 +1,71 @@
+import 'package:dio/dio.dart';
+import 'package:example/data/dto/model/example_feature.dart';
 import 'package:example/data/dto/model/feature_exception.dart';
 import 'package:example/data/dto/response/post/post_response.dart';
-import 'package:dio/dio.dart';
 
 abstract class RepositoryDatasource {
-  Future<PostResponse> getPostById({required int id});
-
-  Future<PostResponse> getPostForBurpSuite({required int id});
-
-  Future<PostResponse> getPostByIdCorrectFingerprint({required int id});
-
-  Future<PostResponse> getPostByIdIncorrectFingerprint({required int id});
-
-  Future<PostResponse> getPostByIdRetryableIncorrectFingerprint({required int id});
-
-  Future<PostResponse> getPostByIdConfigurableFingerprint({required int id});
-
-  Future<PostResponse> getPostByIdCorrectCertByte({required int id});
-
-  Future<PostResponse> getPostByIdIncorrectCertByte({required int id});
-
-  Future<PostResponse> getPostByIdDownloadableCertByte({required int id});
+  Future<PostResponse> fetchPost(ExampleFeature feature);
 }
 
 class RepositoryDatasourceImpl extends RepositoryDatasource {
-  Dio placeHolderStandardDio;
-  Dio customProxyDioBurpSuite;
-  Dio placeHolderCorrectFingerprintDio;
-  Dio placeHolderIncorrectFingerprintDio;
-  Dio placeHolderRetryableIncorrectFingerprintDio;
-  Dio placeHolderConfigurableFingerprintDio;
-  Dio placeHolderCorrectCertByteDio;
-  Dio placeHolderIncorrectCertByteDio;
-  Dio placeHolderDownloadableCertByteDio;
+  final Dio fetchOkDio;
+  final Dio correctCertificateHashDio;
+  final Dio incorrectCertificateHashDio;
+  final Dio correctSpkiHashDio;
+  final Dio incorrectSpkiHashDio;
+  final Dio correctCertBytesDio;
+  final Dio incorrectCertBytesDio;
+  final Dio burpSuiteDio;
 
   RepositoryDatasourceImpl({
-    required this.placeHolderStandardDio,
-    required this.customProxyDioBurpSuite,
-    required this.placeHolderCorrectFingerprintDio,
-    required this.placeHolderIncorrectFingerprintDio,
-    required this.placeHolderRetryableIncorrectFingerprintDio,
-    required this.placeHolderConfigurableFingerprintDio,
-    required this.placeHolderCorrectCertByteDio,
-    required this.placeHolderIncorrectCertByteDio,
-    required this.placeHolderDownloadableCertByteDio,
+    required this.fetchOkDio,
+    required this.correctCertificateHashDio,
+    required this.incorrectCertificateHashDio,
+    required this.correctSpkiHashDio,
+    required this.incorrectSpkiHashDio,
+    required this.correctCertBytesDio,
+    required this.incorrectCertBytesDio,
+    required this.burpSuiteDio,
   });
 
   @override
-  Future<PostResponse> getPostById({required int id}) async {
-    try {
-      final res = await placeHolderStandardDio.get(
-        'posts/$id',
-      );
-      final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return PostResponse.fromJson(dataMap);
-    } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
-    } catch (e) {
-      throw FeatureException(title: 'Failed', desc: 'error: $e');
+  Future<PostResponse> fetchPost(ExampleFeature feature) {
+    return _getPost(_dioFor(feature));
+  }
+
+  Dio _dioFor(ExampleFeature feature) {
+    switch (feature) {
+      case ExampleFeature.fetchOk:
+        return fetchOkDio;
+      case ExampleFeature.correctCertificateHash:
+        return correctCertificateHashDio;
+      case ExampleFeature.incorrectCertificateHash:
+        return incorrectCertificateHashDio;
+      case ExampleFeature.correctSpkiHash:
+        return correctSpkiHashDio;
+      case ExampleFeature.incorrectSpkiHash:
+        return incorrectSpkiHashDio;
+      case ExampleFeature.correctCertBytes:
+        return correctCertBytesDio;
+      case ExampleFeature.incorrectCertBytes:
+        return incorrectCertBytesDio;
+      case ExampleFeature.burpSuite:
+        return burpSuiteDio;
     }
   }
 
-  @override
-  Future<PostResponse> getPostForBurpSuite({required int id}) async {
+  Future<PostResponse> _getPost(Dio dio) async {
     try {
-      final res = await customProxyDioBurpSuite.get(
-        'posts/$id',
-      );
+      final res = await dio.get('posts/1');
       final dataMap = res.data as Map<String, dynamic>? ?? {};
       return PostResponse.fromJson(dataMap);
     } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
-    } catch (e) {
-      throw FeatureException(title: 'Failed', desc: 'error: $e');
-    }
-  }
-
-  @override
-  Future<PostResponse> getPostByIdCorrectFingerprint({required int id}) async {
-    try {
-      final res = await placeHolderCorrectFingerprintDio.get(
-        'posts/$id',
+      throw FeatureException(
+        title: 'Request failed',
+        desc: '${e.type} — ${e.message ?? e.error}',
       );
-      final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return PostResponse.fromJson(dataMap);
-    } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
     } catch (e) {
-      throw FeatureException(title: 'Failed GENERAL', desc: 'error: $e');
-    }
-  }
-
-  @override
-  Future<PostResponse> getPostByIdIncorrectFingerprint({required int id}) async {
-    try {
-      final res = await placeHolderIncorrectFingerprintDio.get(
-        'posts/$id',
-      );
-      final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return PostResponse.fromJson(dataMap);
-    } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
-    } catch (e) {
-      throw FeatureException(title: 'Failed', desc: 'error: $e');
-    }
-  }
-
-  @override
-  Future<PostResponse> getPostByIdRetryableIncorrectFingerprint({required int id}) async {
-    try {
-      final res = await placeHolderRetryableIncorrectFingerprintDio.get(
-        'posts/$id',
-      );
-      final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return PostResponse.fromJson(dataMap);
-    } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
-    } catch (e) {
-      throw FeatureException(title: 'Failed', desc: 'error: $e');
-    }
-  }
-
-  @override
-  Future<PostResponse> getPostByIdConfigurableFingerprint({required int id}) async {
-    try {
-      final res = await placeHolderConfigurableFingerprintDio.get(
-        'posts/$id',
-      );
-      final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return PostResponse.fromJson(dataMap);
-    } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
-    } catch (e) {
-      throw FeatureException(title: 'Failed', desc: 'error: $e');
-    }
-  }
-
-  @override
-  Future<PostResponse> getPostByIdCorrectCertByte({required int id}) async {
-    try {
-      final res = await placeHolderCorrectCertByteDio.get(
-        'posts/$id',
-      );
-      final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return PostResponse.fromJson(dataMap);
-    } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
-    } catch (e) {
-      throw FeatureException(title: 'Failed', desc: 'error: $e');
-    }
-  }
-
-  @override
-  Future<PostResponse> getPostByIdIncorrectCertByte({required int id}) async {
-    try {
-      final res = await placeHolderIncorrectCertByteDio.get(
-        'posts/$id',
-      );
-      final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return PostResponse.fromJson(dataMap);
-    } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
-    } catch (e) {
-      throw FeatureException(title: 'Failed', desc: 'error: $e');
-    }
-  }
-
-  @override
-  Future<PostResponse> getPostByIdDownloadableCertByte({required int id}) async {
-    try {
-      final res = await placeHolderDownloadableCertByteDio.get(
-        'posts/$id',
-      );
-      final dataMap = res.data as Map<String, dynamic>? ?? {};
-      return PostResponse.fromJson(dataMap);
-    } on DioException catch (e) {
-      throw FeatureException(title: 'Failed DIO', desc: '${e.response?.statusCode} - ${e.type} - ${e.message}');
-    } catch (e) {
-      throw FeatureException(title: 'Failed', desc: 'error: $e');
+      throw FeatureException(title: 'Request failed', desc: '$e');
     }
   }
 }

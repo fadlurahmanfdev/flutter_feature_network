@@ -14,23 +14,24 @@ class InfoBottomsheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.w700)),
-          SizedBox(height: 50),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+          const SizedBox(height: 12),
           Text(desc),
-          SizedBox(height: 50),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
-          )
+          ),
         ],
       ),
     );

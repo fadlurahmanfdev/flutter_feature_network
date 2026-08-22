@@ -1,11 +1,21 @@
-class FeatureModel {
-  String title;
-  String desc;
-  String key;
+import 'package:example/data/dto/model/example_feature.dart';
 
-  FeatureModel({
+class FeatureModel {
+  final ExampleFeature feature;
+  final String title;
+  final String message;
+
+  const FeatureModel({
+    required this.feature,
     required this.title,
-    required this.desc,
-    required this.key,
+    required this.message,
   });
+
+  factory FeatureModel.from(ExampleFeature feature) {
+    return FeatureModel(
+      feature: feature,
+      title: feature.title,
+      message: feature.message,
+    );
+  }
 }

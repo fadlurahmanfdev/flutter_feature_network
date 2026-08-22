@@ -1,4 +1,4 @@
-class FeatureException {
+class FeatureException implements Exception {
   final String title;
   final String desc;
 

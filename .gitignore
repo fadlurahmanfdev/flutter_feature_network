@@ -31,7 +31,5 @@ build/
 *.g.dart
 !example/**/*.g.dart
 
-*.pem
-
 # FVM Version Cache
 .fvm/

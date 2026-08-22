@@ -4,12 +4,21 @@ import 'dart:typed_data';
 
 import 'package:asn1lib/asn1lib.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart';
 
-class NetworxSecurity {
-  // String getHash(X509Certificate certificate){
-  //   final derBytes = certificate.der;
-  //   return sha256.convert(derBytes).toString().toLowerCase();
-  // }
+class NetworxPinningUtils {
+  static Future<Uint8List> getCertificateBytesFromAsset({
+    required String assetPath,
+  }) async {
+    return rootBundle.load(assetPath).then((byteData) {
+      return byteData.buffer.asUint8List();
+    });
+  }
+
+  static String getHash(X509Certificate certificate){
+    final derBytes = certificate.der;
+    return sha256.convert(derBytes).toString().toLowerCase();
+  }
 
   /// Extracts the SHA-256 SPKI pin from an X.509 certificate.
   ///
