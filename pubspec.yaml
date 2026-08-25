@@ -1,6 +1,6 @@
 name: networx
 description: "Network library perform API request through dio, add ons with Certificate Pinning"
-version: 0.0.2
+version: 1.0.0
 homepage: https://github.com/fadlurahmanfdev/flutter_feature_network
 
 environment:

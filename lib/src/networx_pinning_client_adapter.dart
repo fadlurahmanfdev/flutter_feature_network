@@ -1,7 +1,5 @@
-import 'dart:developer';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
 import 'package:dio/io.dart';
 
 import 'networx_pinning_utils.dart';
@@ -49,43 +47,24 @@ class NetworxPinningClientAdapter extends IOHttpClientAdapter {
   ///
   /// [pinningHash] is the list of certificate hashes and SPKI pins that
   /// may pass TLS. Pass `null` to skip hash pinning.
-  NetworxPinningClientAdapter({this.certificateBytes, this.pinningHash});
-
-  /// Builds the underlying HTTP client for each request.
-  ///
-  /// When [certificateBytes] is provided, the client trusts only that PEM.
-  /// That is useful when you want the app to ignore public CAs and accept
-  /// one known certificate only.
-  @override
-  CreateHttpClient? get createHttpClient => () {
-        if (certificateBytes != null) {
-          final securityContext = SecurityContext();
-          securityContext.setTrustedCertificatesBytes(certificateBytes!);
-          return HttpClient(context: securityContext);
-        }
-
-        return super.createHttpClient!();
+  NetworxPinningClientAdapter({this.certificateBytes, this.pinningHash}) {
+    final pem = certificateBytes;
+    if (pem != null) {
+      createHttpClient = () {
+        final securityContext = SecurityContext()
+          ..setTrustedCertificatesBytes(pem);
+        return HttpClient(context: securityContext);
       };
+    }
 
-  /// Decides whether the live TLS certificate is allowed to continue.
-  ///
-  /// When [pinningHash] is set, the request is allowed only if the server
-  /// certificate hash or SPKI pin appears in that list. When it is not set,
-  /// the handshake is left to the usual TLS checks.
-  @override
-  ValidateCertificate? get validateCertificate => (cert, host, port) {
-        if (pinningHash != null) {
-          if (cert == null) return false;
-          final derBytes = cert.der;
-          final certHash = sha256.convert(derBytes).toString();
-          final spkiHash = NetworxPinningUtils.getSpkiPin(cert);
-          final isCertMatched = pinningHash!.contains(certHash);
-          final isSpkiMatched = pinningHash!.contains(spkiHash);
-          log('isCertMatched: $isCertMatched');
-          log('isSpkiMatched: $isSpkiMatched');
-          return isCertMatched || isSpkiMatched;
-        }
-
-        return true;
+    final pins = pinningHash;
+    if (pins != null) {
+      validateCertificate = (cert, host, port) {
+        if (cert == null) return false;
+        final certHash = NetworxPinningUtils.getHash(cert);
+        final spkiHash = NetworxPinningUtils.getSpkiPin(cert);
+        return pins.contains(certHash) || pins.contains(spkiHash);
       };
+    }
+  }
 }
